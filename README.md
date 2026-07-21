@@ -1,144 +1,174 @@
 # Exam Plugin
 
-一个 Obsidian 插件，将考试题目渲染成精美的交互式卡片。支持 XML 格式的题目定义，包含题干、选项、答案和详细解析。
+一个 Obsidian 插件，将考试题目渲染成精美的交互式卡片。
 
 ## 功能特性
 
-- 📝 **XML 格式支持** - 使用简洁的 XML 标签定义题目
-- 🎨 **精美卡片设计** - 现代化的交互式卡片界面
-- 🌓 **深色/浅色主题** - 自适应 Obsidian 主题
-- 📱 **响应式设计** - 支持各种屏幕尺寸
-- 🔵 **圆形选项按钮** - ABCD 选项用圆形按钮表示
-- 🔍 **可折叠解析** - 点击展开详细答案解析
-- ✨ **Markdown 支持** - 题干和解析支持完整的 Markdown 语法
-- 🖼️ **图片支持** - 题目中可以嵌入图片
+- 🎨 **精美卡片设计** — 带序号角标、渐变顶栏的现代化卡片
+- 🌓 **深色/浅色主题** — 自动适配 Obsidian 主题
+- 📝 **简洁语法** — 基于纯文本行格式，无需 XML
+- ✅ **正确答案标记** — 选项末尾 `*` 标记正确答案，绿色高亮 + ✓ 勾号
+- 🖊️ **填空支持** — 下划线 `___` 自动渲染为填空线
+- 🔍 **可折叠解析** — 点击「查看解析」展开详细分析
+- 📖 **词汇表** — 支持在解析区展示相关词汇释义
+- 📱 **响应式设计** — 适配移动端屏幕
+- ⚠️ **错误提示** — 格式错误时显示友好提示
 
 ## 使用方法
 
 ### 基本语法
 
-在 Obsidian 中创建代码块，使用 `exam` 或 `exam1`、`exam2` 等作为语言标识：
+在 Obsidian 中使用 `exam` 代码块：
 
-```xml
-```exam1
-<source>2022 Exam</source>
-<stem>题目内容，可以包含 ![图片](image.png)</stem>
-<options>
-A. 选项A
-B. 选项B
-C. 选项C
-D. 选项D
-</options>
-<answer>B</answer>
-<analysis>
-## 解析标题
-
-详细的答案解析，支持 **加粗**、*斜体*、列表等 Markdown 格式。
-
-- 列表项1
-- 列表项2
-
-### 子标题
-
-更多内容...
-</analysis>
+````markdown
+```exam
+1 2022年春季
+The company aims to ___ its market share by 20% next year.
+A. increase *
+B. decrease
+C. maintain
+D. ignore
+解析：increase 表示"增加"，符合句意 "公司将目标明年增加 20% 市场份额"。
+词汇：
+aim to - 旨在，目标是
+market share - 市场份额
 ```
+````
+
+### 渲染效果
+
+卡片包含：
+- 左上方大号淡色数字角标（题号）
+- 题号 + 来源作为头部
+- 题干（下划线 `___` 渲染为填空线）
+- 选项列表（ABCD）
+- 正确答案以绿色边框 + ✓ 标记
+- 底部「查看解析 ▼」按钮，点击展开
+
+### 格式说明
+
+```
+第一行：<题号> <来源>
+随后行：题干内容（支持多行，下划线 ___ 转为填空）
+选项：  A/B/C/D. <选项内容> [*]
+解析：  解析：<解析内容>（可选）
+词汇：  词汇：（可选，下一行开始 word - definition 格式）
 ```
 
-### 标签说明
+### 各元素详解
 
-| 标签 | 说明 | 必需 |
+#### 第一行 — 题号 + 来源
+
+```
+1 2022年高考英语
+```
+
+| 部分 | 说明 |
+|------|------|
+| `1` | 题号，渲染为卡片左上角的淡色水印 |
+| `2022年高考英语` | 来源，显示在题干前（蓝色高亮） |
+
+#### 题干
+
+支持多行文本，其中的连续下划线 `___` 会被渲染为填空线：
+
+```exam
+2 词汇运用
+The project was completed ahead of ___.
+A. schedule *
+B. budget
+C. deadline
+D. plan
+```
+
+#### 选项
+
+每行一个选项，格式为 `<字母>. <内容>`，正确答案在末尾加 `*`：
+
+```
+A. increase *
+B. decrease
+C. maintain
+D. ignore
+```
+
+- 正确答案显示为绿色边框 + 绿色 ✓ 标记
+- 无需显式 `<answer>` 标签
+
+#### 解析（可选）
+
+以 `解析：` 开头，后面的内容会显示在可折叠区域：
+
+```
+解析：increase 表示增加，decrease 表示减少。根据句意选 A。
+```
+
+#### 词汇（可选）
+
+以 `词汇：` 开头，随后每行 `word - definition` 格式：
+
+```
+词汇：
+aim to - 目标是
+market share - 市场份额
+schedule - 日程安排
+```
+
+词汇会以网格形式展示在解析区域下方，单词以蓝色高亮。
+
+## 语法速查
+
+| 元素 | 格式 | 必需 |
 |------|------|------|
-| `<source>` | 题目来源（如 "2022 山东国考"） | ✅ |
-| `<stem>` | 题干内容 | ✅ |
-| `<options>` | 选项列表（A、B、C、D） | ✅ |
-| `<answer>` | 正确答案（A/B/C/D） | ✅ |
-| `<analysis>` | 详细解析（可选） | ❌ |
-
-### 高级功能
-
-#### 题干中的图片
-```xml
-<stem>
-题目描述文本
-
-![描述](images/diagram.png)
-
-更多文本...
-</stem>
-```
-
-#### 选项中的图片
-```xml
-<options>
-A. 选项A描述 ![图片A](option-a.png)
-B. 选项B描述
-C. 选项C描述
-D. 选项D描述
-</options>
-```
-
-#### 解析中的 Markdown
-```xml
-<analysis>
-## 主标题
-
-### 副标题
-
-**加粗文本** 和 *斜体文本*
-
-`代码片段`
-
-[链接文本](https://example.com)
-
-- 列表项1
-- 列表项2
-
-### 错误选项分析
-
-- **A** - 原因1
-- **B** - 原因2
-</analysis>
-```
-
-## 多选题支持
-
-如需支持多选题，在 `<answer>` 标签中用逗号分隔多个答案：
-
-```xml
-<answer>A,C</answer>
-```
-
-此时对应的选项按钮会同时显示为绿色。
-
-## 样式特性
-
-- **圆形字母按钮** - ABCD 以 40px 圆形按钮显示
-- **悬停效果** - 鼠标悬停时边框变蓝
-- **正确答案高亮** - 正确的选项按钮变成绿色
-- **可折叠解析** - "View Analysis" 按钮点击展开/折叠
-- **响应式** - 移动设备上自动调整布局
+| 题号 + 来源 | `<数字> <来源文本>` | ✅ |
+| 题干 | 任意文本，`___` 变填空线 | ✅ |
+| 选项 | `A/B/C/D. <内容> [*]` | ✅（至少一个） |
+| 解析 | `解析：<内容>` | ❌ |
+| 词汇 | `词汇：` 后每行 `word - def` | ❌ |
 
 ## 安装
 
-### 从社区插件安装
+### 方式一：BRAT 安装（推荐）
 
-1. 打开 Obsidian 设置
-2. 进入 "社区插件" 页面
-3. 搜索 "Exam Card Renderer"
-4. 点击 "安装"
-5. 启用插件
+1. 在 Obsidian 社区插件中搜索安装 [BRAT](https://github.com/TfTHacker/obsidian42-brat)
+2. 打开 BRAT 设置 → 「Add Beta plugin」
+3. 输入仓库地址：`zengjing/obsidian-exam-plugin`
+4. 安装后在「第三方插件」中启用
 
-### 手动安装
+> BRAT 会自动检测 GitHub 仓库更新。
 
-1. 创建文件夹：`.obsidian/plugins/obsidian-exam-plugin`
-2. 将 `main.js` 和 `manifest.json` 复制到该文件夹
-3. 重启 Obsidian 或刷新插件列表
+### 方式二：GitHub Release 安装
 
-## 主题支持
+1. 前往 [Releases](https://github.com/zengjing/obsidian-exam-plugin/releases) 页面
+2. 下载最新版本的 `obsidian-exam-plugin.zip`
+3. 解压到 `<vault>/.obsidian/plugins/obsidian-exam-plugin/`
+4. 重启 Obsidian，在「第三方插件」中启用
 
-插件自动支持 Obsidian 的浅色和深色主题，会根据主题自动调整颜色。
+### 方式三：手动克隆
+
+```bash
+cd <vault路径>/.obsidian/plugins/
+git clone https://github.com/zengjing/obsidian-exam-plugin.git
+```
+
+然后在 Obsidian 中启用插件。
+
+## 开发
+
+```bash
+# 安装依赖
+npm install
+
+# 开发模式（监听文件变化）
+npm run dev
+
+# 构建
+npm run build
+
+# 打包发布 zip
+npm run release
+```
 
 ## 许可证
 
-MIT License
+MIT License © zengjing
