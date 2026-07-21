@@ -58,21 +58,9 @@ export const EXAM_CARD_STYLE = `
 
 .exam-card-source {
   color: var(--blue);
-  font-weight: 600;
-  margin-right: 6px;
+  font-weight: 500;
+  margin-right: 4px;
   white-space: nowrap;
-}
-
-.exam-card-source::after {
-  content: '';
-  display: inline-block;
-  width: 1px;
-  height: 14px;
-  background: var(--border);
-  margin-left: 8px;
-  vertical-align: middle;
-  position: relative;
-  top: -1px;
 }
 
 .exam-card-question {

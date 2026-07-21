@@ -82,16 +82,13 @@ var ExamCardRenderer = class {
         el2.innerHTML = el2.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
       });
       stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
+      const sourceSpan = document.createElement("span");
+      sourceSpan.className = "exam-card-source";
+      sourceSpan.textContent = `\uFF08${exam.source}\uFF09`;
       const firstP = stemDiv.querySelector("p");
       if (firstP) {
-        const sourceSpan = document.createElement("span");
-        sourceSpan.className = "exam-card-source";
-        sourceSpan.textContent = exam.source;
         firstP.insertBefore(sourceSpan, firstP.firstChild);
       } else {
-        const sourceSpan = document.createElement("span");
-        sourceSpan.className = "exam-card-source";
-        sourceSpan.textContent = exam.source;
         stemDiv.insertBefore(sourceSpan, stemDiv.firstChild);
       }
       const optionsDiv = content.createDiv("exam-card-options");
@@ -192,21 +189,9 @@ var EXAM_CARD_STYLE = `
 
 .exam-card-source {
   color: var(--blue);
-  font-weight: 600;
-  margin-right: 6px;
+  font-weight: 500;
+  margin-right: 4px;
   white-space: nowrap;
-}
-
-.exam-card-source::after {
-  content: '';
-  display: inline-block;
-  width: 1px;
-  height: 14px;
-  background: var(--border);
-  margin-left: 8px;
-  vertical-align: middle;
-  position: relative;
-  top: -1px;
 }
 
 .exam-card-question {

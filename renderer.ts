@@ -71,18 +71,14 @@ export class ExamCardRenderer {
       });
       stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
 
-      // 将来源标签插入题干首段，与题干同行显示
+      // 将来源以（标签）形式插入题干首段
+      const sourceSpan = document.createElement('span');
+      sourceSpan.className = 'exam-card-source';
+      sourceSpan.textContent = `（${exam.source}）`;
       const firstP = stemDiv.querySelector('p');
       if (firstP) {
-        const sourceSpan = document.createElement('span');
-        sourceSpan.className = 'exam-card-source';
-        sourceSpan.textContent = exam.source;
         firstP.insertBefore(sourceSpan, firstP.firstChild);
       } else {
-        // 如果 stem 没有产生 <p>（纯文本），在前面插入
-        const sourceSpan = document.createElement('span');
-        sourceSpan.className = 'exam-card-source';
-        sourceSpan.textContent = exam.source;
         stemDiv.insertBefore(sourceSpan, stemDiv.firstChild);
       }
 
