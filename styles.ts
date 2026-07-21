@@ -33,18 +33,19 @@ export const EXAM_CARD_STYLE = `
 }
 
 .exam-card-badge {
-  position: absolute;
-  top: 14px;
-  left: 4px;
-  width: 28px;
-  text-align: right;
-  font-family: 'Noto Sans SC', sans-serif;
-  font-weight: 600;
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  z-index: 10;
-  pointer-events: none;
-  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  vertical-align: middle;
 }
 
 .exam-card {

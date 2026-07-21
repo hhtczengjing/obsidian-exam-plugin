@@ -61,17 +61,10 @@ export class ExamCardRenderer {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv('exam-card-wrapper');
 
-      // 题号角标（卡片外侧左上角）
-      if (exam.num) {
-        wrapper.style.paddingLeft = '36px';
-        const badge = wrapper.createDiv('exam-card-badge');
-        badge.textContent = exam.num;
-      }
-
       const card = wrapper.createDiv('exam-card');
       const content = card.createDiv('exam-card-content');
 
-      // 题干容器：来源标签融入题干首行
+      // 题干容器
       const stemDiv = content.createDiv('exam-card-question');
       await this.renderMarkdown(exam.stem, stemDiv, ctx.sourcePath);
 
@@ -81,16 +74,21 @@ export class ExamCardRenderer {
       });
       stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
 
-      // 将来源以（标签）形式插入题干首段
+      // 在题干首段插入：题号 + 来源标签
+      const firstP = stemDiv.querySelector('p');
+      const target = firstP || stemDiv;
+
+      if (exam.num) {
+        const badge = document.createElement('span');
+        badge.className = 'exam-card-badge';
+        badge.textContent = exam.num;
+        target.insertBefore(badge, target.firstChild);
+      }
+
       const sourceSpan = document.createElement('span');
       sourceSpan.className = 'exam-card-source';
       sourceSpan.textContent = `（${exam.source}）`;
-      const firstP = stemDiv.querySelector('p');
-      if (firstP) {
-        firstP.insertBefore(sourceSpan, firstP.firstChild);
-      } else {
-        stemDiv.insertBefore(sourceSpan, stemDiv.firstChild);
-      }
+      target.insertBefore(sourceSpan, target.firstChild);
 
       // 选项
       const optionsDiv = content.createDiv('exam-card-options');

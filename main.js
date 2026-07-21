@@ -75,11 +75,6 @@ var ExamCardRenderer = class {
     try {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv("exam-card-wrapper");
-      if (exam.num) {
-        wrapper.style.paddingLeft = "36px";
-        const badge = wrapper.createDiv("exam-card-badge");
-        badge.textContent = exam.num;
-      }
       const card = wrapper.createDiv("exam-card");
       const content = card.createDiv("exam-card-content");
       const stemDiv = content.createDiv("exam-card-question");
@@ -88,15 +83,18 @@ var ExamCardRenderer = class {
         el2.innerHTML = el2.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
       });
       stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
+      const firstP = stemDiv.querySelector("p");
+      const target = firstP || stemDiv;
+      if (exam.num) {
+        const badge = document.createElement("span");
+        badge.className = "exam-card-badge";
+        badge.textContent = exam.num;
+        target.insertBefore(badge, target.firstChild);
+      }
       const sourceSpan = document.createElement("span");
       sourceSpan.className = "exam-card-source";
       sourceSpan.textContent = `\uFF08${exam.source}\uFF09`;
-      const firstP = stemDiv.querySelector("p");
-      if (firstP) {
-        firstP.insertBefore(sourceSpan, firstP.firstChild);
-      } else {
-        stemDiv.insertBefore(sourceSpan, stemDiv.firstChild);
-      }
+      target.insertBefore(sourceSpan, target.firstChild);
       const optionsDiv = content.createDiv("exam-card-options");
       exam.options.forEach((opt) => {
         const isCorrect = exam.answer.includes(opt.label);
@@ -170,18 +168,19 @@ var EXAM_CARD_STYLE = `
 }
 
 .exam-card-badge {
-  position: absolute;
-  top: 14px;
-  left: 4px;
-  width: 28px;
-  text-align: right;
-  font-family: 'Noto Sans SC', sans-serif;
-  font-weight: 600;
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  z-index: 10;
-  pointer-events: none;
-  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  vertical-align: middle;
 }
 
 .exam-card {
