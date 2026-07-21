@@ -31,132 +31,91 @@ var import_obsidian = __toModule(require("obsidian"));
 // renderer.ts
 var ExamCardRenderer = class {
   parseExamBlock(source) {
-    const lines = source.trim().split("\n").filter((line) => line.trim());
-    let idx = 0;
-    if (idx >= lines.length) {
-      throw new Error("Empty exam block");
-    }
-    const headerLine = lines[idx++].trim();
-    const numberMatch = headerLine.match(/^(\d+)\s+(.+)$/);
-    if (!numberMatch) {
-      throw new Error("First line must be: <number> <source>");
-    }
-    const number = parseInt(numberMatch[1]);
-    const sourceName = numberMatch[2];
-    let question = "";
-    while (idx < lines.length && !/^[A-D]\s+/.test(lines[idx].trim())) {
-      question += lines[idx].trim() + " ";
-      idx++;
-    }
-    question = question.trim();
-    if (!question) {
-      throw new Error("Question text is required");
-    }
+    const getTagContent = (tag) => {
+      const regex = new RegExp(`<${tag}>(.*?)</${tag}>`, "s");
+      const match = source.match(regex);
+      return match ? match[1].trim() : "";
+    };
+    const sourceText = getTagContent("source");
+    const stem = getTagContent("stem");
+    const optionsText = getTagContent("options");
+    const answerText = getTagContent("answer");
+    const analysis = getTagContent("analysis");
+    if (!sourceText)
+      throw new Error("<source> \u6807\u7B7E\u4E0D\u80FD\u4E3A\u7A7A");
+    if (!stem)
+      throw new Error("<stem> \u6807\u7B7E\u4E0D\u80FD\u4E3A\u7A7A");
+    if (!optionsText)
+      throw new Error("<options> \u6807\u7B7E\u4E0D\u80FD\u4E3A\u7A7A");
+    if (!answerText)
+      throw new Error("<answer> \u6807\u7B7E\u4E0D\u80FD\u4E3A\u7A7A");
+    const optionLines = optionsText.trim().split("\n").filter((line) => line.trim());
     const options = [];
-    while (idx < lines.length && /^[A-D]\s+/.test(lines[idx].trim())) {
-      const line = lines[idx].trim();
-      const match = line.match(/^([A-D])\s+(.+?)(\s+\*)?$/);
+    for (const line of optionLines) {
+      const match = line.trim().match(/^([A-D])\.\s+(.+?)(\s+\*)?$/);
       if (match) {
-        options.push({
-          label: match[1],
-          text: match[2].trim(),
-          correct: !!match[3]
-        });
+        options.push({ label: match[1], text: match[2].trim() });
       }
-      idx++;
     }
     if (options.length === 0) {
-      throw new Error("At least one option is required");
+      throw new Error("<options> \u4E2D\u81F3\u5C11\u9700\u8981\u4E00\u4E2A\u9009\u9879");
     }
-    let analysis;
-    if (idx < lines.length && lines[idx].startsWith("\u89E3\u6790\uFF1A")) {
-      analysis = lines[idx].substring(3).trim();
-      idx++;
+    const answer = answerText.split(",").map((s) => s.trim()).filter(Boolean);
+    if (answer.length === 0) {
+      throw new Error("<answer> \u6807\u7B7E\u683C\u5F0F\u9519\u8BEF");
     }
-    const vocab = [];
-    if (idx < lines.length && lines[idx].startsWith("\u8BCD\u6C47\uFF1A")) {
-      idx++;
-      while (idx < lines.length && lines[idx].trim()) {
-        const vocabLine = lines[idx].trim();
-        const vocabMatch = vocabLine.match(/^(.+?)\s*-\s*(.+)$/);
-        if (vocabMatch) {
-          vocab.push({
-            word: vocabMatch[1].trim(),
-            def: vocabMatch[2].trim()
-          });
-        }
-        idx++;
-      }
-    }
-    return { number, source: sourceName, question, options, analysis, vocab };
+    return { source: sourceText, stem, options, answer, analysis };
   }
   render(source, el, ctx) {
-    var _a, _b;
     try {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv("exam-card-wrapper");
-      const badge = wrapper.createDiv("exam-card-badge");
-      badge.textContent = exam.number.toString();
       const card = wrapper.createDiv("exam-card");
       const content = card.createDiv("exam-card-content");
       const header = content.createDiv("exam-card-header");
       const sourceSpan = header.createSpan("exam-card-source");
       sourceSpan.textContent = exam.source;
-      const questionSpan = header.createSpan("exam-card-question");
-      questionSpan.innerHTML = this.formatQuestion(exam.question);
-      const options = content.createDiv("exam-card-options");
+      const stemDiv = content.createDiv("exam-card-question");
+      stemDiv.innerHTML = this.formatStem(exam.stem);
+      const optionsDiv = content.createDiv("exam-card-options");
       exam.options.forEach((opt) => {
-        const optEl = options.createDiv("exam-card-option" + (opt.correct ? " correct" : ""));
+        const isCorrect = exam.answer.includes(opt.label);
+        const optEl = optionsDiv.createDiv("exam-card-option" + (isCorrect ? " correct" : ""));
         const label = optEl.createSpan("exam-card-option-label");
         label.textContent = opt.label;
         const text = optEl.createSpan();
         text.textContent = opt.text;
       });
-      if (exam.analysis || ((_a = exam.vocab) == null ? void 0 : _a.length)) {
+      if (exam.analysis) {
         const expandBtn = card.createDiv("exam-card-expand");
         expandBtn.textContent = "\u67E5\u770B\u89E3\u6790";
         expandBtn.addEventListener("click", () => {
           card.classList.toggle("expanded");
         });
-        const analysis = card.createDiv("exam-card-analysis");
-        const analysisInner = analysis.createDiv("exam-card-analysis-inner");
-        if (exam.analysis) {
-          const title = analysisInner.createDiv("exam-card-analysis-title");
-          title.textContent = "\u8BE6\u7EC6\u89E3\u6790";
-          const contentDiv = analysisInner.createDiv("exam-card-analysis-content");
-          const paragraphs = exam.analysis.split("\n").filter((p) => p.trim());
-          if (paragraphs.length > 1) {
-            contentDiv.innerHTML = paragraphs.map((p) => `<p>${p.trim()}</p>`).join("");
-          } else {
-            contentDiv.textContent = exam.analysis;
-          }
-        }
-        if ((_b = exam.vocab) == null ? void 0 : _b.length) {
-          const vocabSection = analysisInner.createDiv("exam-card-vocab-section");
-          const vocabTitle = vocabSection.createDiv("exam-card-vocab-title");
-          vocabTitle.textContent = "\u76F8\u5173\u8BCD\u6C47";
-          const vocabGrid = vocabSection.createDiv("exam-card-vocab-grid");
-          exam.vocab.forEach((v) => {
-            const item = vocabGrid.createDiv("exam-card-vocab-item");
-            const word = item.createDiv("exam-card-vocab-word");
-            word.textContent = v.word;
-            const def = item.createDiv("exam-card-vocab-def");
-            def.textContent = v.def;
-          });
+        const analysisDiv = card.createDiv("exam-card-analysis");
+        const analysisInner = analysisDiv.createDiv("exam-card-analysis-inner");
+        const title = analysisInner.createDiv("exam-card-analysis-title");
+        title.textContent = "\u8BE6\u7EC6\u89E3\u6790";
+        const contentDiv = analysisInner.createDiv("exam-card-analysis-content");
+        const paragraphs = exam.analysis.split("\n").filter((p) => p.trim());
+        if (paragraphs.length > 1) {
+          contentDiv.innerHTML = paragraphs.map((p) => `<p>${p.trim()}</p>`).join("");
+        } else {
+          contentDiv.textContent = exam.analysis;
         }
       }
     } catch (error) {
       const errorDiv = el.createDiv();
-      errorDiv.style.color = "var(--text-secondary)";
+      errorDiv.style.color = "var(--text-muted)";
       errorDiv.style.padding = "16px";
       errorDiv.style.borderRadius = "8px";
-      errorDiv.style.backgroundColor = "var(--bg-section)";
-      errorDiv.style.border = "1px solid var(--border)";
-      errorDiv.textContent = `\u274C \u8003\u9898\u5361\u7247\u9519\u8BEF: ${error instanceof Error ? error.message : String(error)}`;
+      errorDiv.style.backgroundColor = "var(--background-secondary)";
+      errorDiv.style.border = "1px solid var(--background-modifier-border)";
+      errorDiv.textContent = `\u274C Exam Plugin: ${error instanceof Error ? error.message : String(error)}`;
     }
   }
-  formatQuestion(question) {
-    return question.replace(/_+/g, '<span class="exam-card-blank"></span>');
+  formatStem(stem) {
+    return stem.replace(/_+/g, '<span class="exam-card-blank"></span>');
   }
 };
 

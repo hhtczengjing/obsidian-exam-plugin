@@ -1,16 +1,15 @@
 # Exam Plugin
 
-一个 Obsidian 插件，将考试题目渲染成精美的交互式卡片。
+一个 Obsidian 插件，将考试题目渲染成精美的交互式卡片。使用 XML 标签定义题目结构。
 
 ## 功能特性
 
-- 🎨 **精美卡片设计** — 带序号角标、渐变顶栏的现代化卡片
+- 📝 **XML 标签格式** — 使用 `<source>`、`<stem>`、`<options>`、`<answer>`、`<analysis>` 标签定义题目
+- 🎨 **精美卡片设计** — 现代化卡片界面，渐变顶栏
 - 🌓 **深色/浅色主题** — 自动适配 Obsidian 主题
-- 📝 **简洁语法** — 基于纯文本行格式，无需 XML
-- ✅ **正确答案标记** — 选项末尾 `*` 标记正确答案，绿色高亮 + ✓ 勾号
+- ✅ **正确答案高亮** — 正确选项绿色边框 + 勾号标记
 - 🖊️ **填空支持** — 下划线 `___` 自动渲染为填空线
 - 🔍 **可折叠解析** — 点击「查看解析」展开详细分析
-- 📖 **词汇表** — 支持在解析区展示相关词汇释义
 - 📱 **响应式设计** — 适配移动端屏幕
 - ⚠️ **错误提示** — 格式错误时显示友好提示
 
@@ -18,113 +17,115 @@
 
 ### 基本语法
 
-在 Obsidian 中使用 `exam` 代码块：
+在 Obsidian 中使用 `exam` 代码块，内容为 XML 标签格式：
 
 ````markdown
 ```exam
-1 2022年春季
+<source>2022年高考英语</source>
+<stem>
 The company aims to ___ its market share by 20% next year.
+</stem>
+<options>
 A. increase *
 B. decrease
 C. maintain
 D. ignore
-解析：increase 表示"增加"，符合句意 "公司将目标明年增加 20% 市场份额"。
-词汇：
-aim to - 旨在，目标是
-market share - 市场份额
+</options>
+<answer>B</answer>
+<analysis>
+increase 表示"增加"，decrease 表示"减少"。
+根据句意"公司将目标明年增加 20% 市场份额"，应选 A。
+</analysis>
 ```
 ````
 
 ### 渲染效果
 
-卡片包含：
-- 左上方大号淡色数字角标（题号）
-- 题号 + 来源作为头部
-- 题干（下划线 `___` 渲染为填空线）
-- 选项列表（ABCD）
-- 正确答案以绿色边框 + ✓ 标记
-- 底部「查看解析 ▼」按钮，点击展开
+### 标签说明
 
-### 格式说明
+| 标签 | 说明 | 必需 |
+|------|------|------|
+| `<source>` | 题目来源（如 "2022年高考英语"），显示在题干上方蓝色高亮 | ✅ |
+| `<stem>` | 题干内容，支持下划线 `___` 转填空线 | ✅ |
+| `<options>` | 选项列表，每行 `字母. 内容`，正确答案末尾加 `*` | ✅ |
+| `<answer>` | 正确答案字母，多选用逗号分隔如 `A,C` | ✅ |
+| `<analysis>` | 答案解析，支持多行文本，点击「查看解析」展开 | ❌ |
 
+### 各种用法示例
+
+#### 单选题
+
+```xml
+<source>2022年春季</source>
+<stem>What is the capital of France?</stem>
+<options>
+A. London
+B. Paris *
+C. Berlin
+D. Madrid
+</options>
+<answer>B</answer>
+<analysis>Paris is the capital and most populous city of France.</analysis>
 ```
-第一行：<题号> <来源>
-随后行：题干内容（支持多行，下划线 ___ 转为填空）
-选项：  A/B/C/D. <选项内容> [*]
-解析：  解析：<解析内容>（可选）
-词汇：  词汇：（可选，下一行开始 word - definition 格式）
+
+#### 多选题
+
+在 `<answer>` 中逗号分隔多个答案：
+
+```xml
+<source>2022年期中</source>
+<stem>以下哪些是哺乳动物？</stem>
+<options>
+A. 鲸鱼 *
+B. 鲨鱼
+C. 海豚 *
+D. 海龟
+</options>
+<answer>A,C</answer>
+<analysis>鲸鱼和海豚都属于海洋哺乳动物，鲨鱼是鱼类，海龟是爬行动物。</analysis>
 ```
 
-### 各元素详解
+#### 带填空的题目
 
-#### 第一行 — 题号 + 来源
+题干中用下划线 `___` 表示填空位置：
 
-```
-1 2022年高考英语
-```
-
-| 部分 | 说明 |
-|------|------|
-| `1` | 题号，渲染为卡片左上角的淡色水印 |
-| `2022年高考英语` | 来源，显示在题干前（蓝色高亮） |
-
-#### 题干
-
-支持多行文本，其中的连续下划线 `___` 会被渲染为填空线：
-
-```exam
-2 词汇运用
+```xml
+<source>词汇练习</source>
+<stem>
 The project was completed ahead of ___.
+</stem>
+<options>
 A. schedule *
 B. budget
 C. deadline
 D. plan
+</options>
+<answer>A</answer>
+<analysis>ahead of schedule 表示"提前"，是固定搭配。</analysis>
 ```
 
-#### 选项
+#### 题干和解析中包含图片
 
-每行一个选项，格式为 `<字母>. <内容>`，正确答案在末尾加 `*`：
+```xml
+<source>地理题</source>
+<stem>
+根据下图回答问题：
 
+![地图](images/map.png)
+</stem>
+<options>
+A. 北京
+B. 上海 *
+C. 广州
+D. 深圳
+</options>
+<answer>B</answer>
+<analysis>
+![解析图](images/analysis.png)
+
+图中标记位置为上海市。
+</analysis>
 ```
-A. increase *
-B. decrease
-C. maintain
-D. ignore
-```
-
-- 正确答案显示为绿色边框 + 绿色 ✓ 标记
-- 无需显式 `<answer>` 标签
-
-#### 解析（可选）
-
-以 `解析：` 开头，后面的内容会显示在可折叠区域：
-
-```
-解析：increase 表示增加，decrease 表示减少。根据句意选 A。
-```
-
-#### 词汇（可选）
-
-以 `词汇：` 开头，随后每行 `word - definition` 格式：
-
-```
-词汇：
-aim to - 目标是
-market share - 市场份额
-schedule - 日程安排
-```
-
-词汇会以网格形式展示在解析区域下方，单词以蓝色高亮。
-
-## 语法速查
-
-| 元素 | 格式 | 必需 |
-|------|------|------|
-| 题号 + 来源 | `<数字> <来源文本>` | ✅ |
-| 题干 | 任意文本，`___` 变填空线 | ✅ |
-| 选项 | `A/B/C/D. <内容> [*]` | ✅（至少一个） |
-| 解析 | `解析：<内容>` | ❌ |
-| 词汇 | `词汇：` 后每行 `word - def` | ❌ |
 
 ## 安装
 
@@ -132,14 +133,14 @@ schedule - 日程安排
 
 1. 在 Obsidian 社区插件中搜索安装 [BRAT](https://github.com/TfTHacker/obsidian42-brat)
 2. 打开 BRAT 设置 → 「Add Beta plugin」
-3. 输入仓库地址：`zengjing/obsidian-exam-plugin`
+3. 输入仓库地址：`hhtczengjing/obsidian-exam-plugin`
 4. 安装后在「第三方插件」中启用
 
 > BRAT 会自动检测 GitHub 仓库更新。
 
 ### 方式二：GitHub Release 安装
 
-1. 前往 [Releases](https://github.com/zengjing/obsidian-exam-plugin/releases) 页面
+1. 前往 [Releases](https://github.com/hhtczengjing/obsidian-exam-plugin/releases) 页面
 2. 下载最新版本的 `obsidian-exam-plugin.zip`
 3. 解压到 `<vault>/.obsidian/plugins/obsidian-exam-plugin/`
 4. 重启 Obsidian，在「第三方插件」中启用
@@ -148,25 +149,16 @@ schedule - 日程安排
 
 ```bash
 cd <vault路径>/.obsidian/plugins/
-git clone https://github.com/zengjing/obsidian-exam-plugin.git
+git clone https://github.com/hhtczengjing/obsidian-exam-plugin.git
 ```
-
-然后在 Obsidian 中启用插件。
 
 ## 开发
 
 ```bash
-# 安装依赖
-npm install
-
-# 开发模式（监听文件变化）
-npm run dev
-
-# 构建
-npm run build
-
-# 打包发布 zip
-npm run release
+npm install        # 安装依赖
+npm run dev        # 开发模式（监听文件变化自动构建）
+npm run build      # 生产构建
+npm run release    # 打包 zip
 ```
 
 ## 许可证

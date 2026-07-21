@@ -1,89 +1,54 @@
 import { MarkdownPostProcessorContext } from 'obsidian';
 
 interface ExamQuestion {
-  number: number;
   source: string;
-  question: string;
-  options: { label: string; text: string; correct?: boolean }[];
+  stem: string;
+  options: { label: string; text: string }[];
+  answer: string[];
   analysis?: string;
-  vocab?: { word: string; def: string }[];
 }
 
 export class ExamCardRenderer {
   parseExamBlock(source: string): ExamQuestion {
-    const lines = source.trim().split('\n').filter(line => line.trim());
-    let idx = 0;
+    // 解析 XML 标签
+    const getTagContent = (tag: string): string => {
+      const regex = new RegExp(`<${tag}>(.*?)</${tag}>`, 's');
+      const match = source.match(regex);
+      return match ? match[1].trim() : '';
+    };
 
-    if (idx >= lines.length) {
-      throw new Error('Empty exam block');
-    }
+    const sourceText = getTagContent('source');
+    const stem = getTagContent('stem');
+    const optionsText = getTagContent('options');
+    const answerText = getTagContent('answer');
+    const analysis = getTagContent('analysis');
 
-    // 解析序号和来源
-    const headerLine = lines[idx++].trim();
-    const numberMatch = headerLine.match(/^(\d+)\s+(.+)$/);
-    if (!numberMatch) {
-      throw new Error('First line must be: <number> <source>');
-    }
+    if (!sourceText) throw new Error('<source> 标签不能为空');
+    if (!stem) throw new Error('<stem> 标签不能为空');
+    if (!optionsText) throw new Error('<options> 标签不能为空');
+    if (!answerText) throw new Error('<answer> 标签不能为空');
 
-    const number = parseInt(numberMatch[1]);
-    const sourceName = numberMatch[2];
-
-    // 解析题干（多行，直到遇到选项）
-    let question = '';
-    while (idx < lines.length && !/^[A-D]\s+/.test(lines[idx].trim())) {
-      question += lines[idx].trim() + ' ';
-      idx++;
-    }
-    question = question.trim();
-
-    if (!question) {
-      throw new Error('Question text is required');
-    }
-
-    // 解析选项
+    // 解析选项：每行 A. xxx / A. xxx * 格式，* 标记正确答案
+    const optionLines = optionsText.trim().split('\n').filter(line => line.trim());
     const options: ExamQuestion['options'] = [];
-    while (idx < lines.length && /^[A-D]\s+/.test(lines[idx].trim())) {
-      const line = lines[idx].trim();
-      const match = line.match(/^([A-D])\s+(.+?)(\s+\*)?$/);
+    for (const line of optionLines) {
+      const match = line.trim().match(/^([A-D])\.\s+(.+?)(\s+\*)?$/);
       if (match) {
-        options.push({
-          label: match[1],
-          text: match[2].trim(),
-          correct: !!match[3],
-        });
+        options.push({ label: match[1], text: match[2].trim() });
       }
-      idx++;
     }
 
     if (options.length === 0) {
-      throw new Error('At least one option is required');
+      throw new Error('<options> 中至少需要一个选项');
     }
 
-    // 解析解析（可选）
-    let analysis: string | undefined;
-    if (idx < lines.length && lines[idx].startsWith('解析：')) {
-      analysis = lines[idx].substring(3).trim();
-      idx++;
+    // 解析答案：支持单个 B 或多选 A,C
+    const answer = answerText.split(',').map(s => s.trim()).filter(Boolean);
+    if (answer.length === 0) {
+      throw new Error('<answer> 标签格式错误');
     }
 
-    // 解析词汇（可选）
-    const vocab: ExamQuestion['vocab'] = [];
-    if (idx < lines.length && lines[idx].startsWith('词汇：')) {
-      idx++;
-      while (idx < lines.length && lines[idx].trim()) {
-        const vocabLine = lines[idx].trim();
-        const vocabMatch = vocabLine.match(/^(.+?)\s*-\s*(.+)$/);
-        if (vocabMatch) {
-          vocab.push({
-            word: vocabMatch[1].trim(),
-            def: vocabMatch[2].trim(),
-          });
-        }
-        idx++;
-      }
-    }
-
-    return { number, source: sourceName, question, options, analysis, vocab };
+    return { source: sourceText, stem, options, answer, analysis };
   }
 
   render(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
@@ -91,28 +56,27 @@ export class ExamCardRenderer {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv('exam-card-wrapper');
 
-      // 序号角标
-      const badge = wrapper.createDiv('exam-card-badge');
-      badge.textContent = exam.number.toString();
-
       // 卡片容器
       const card = wrapper.createDiv('exam-card');
 
       // 内容区
       const content = card.createDiv('exam-card-content');
 
-      // 头部（来源 + 题干）
+      // 头部：来源
       const header = content.createDiv('exam-card-header');
       const sourceSpan = header.createSpan('exam-card-source');
       sourceSpan.textContent = exam.source;
-      const questionSpan = header.createSpan('exam-card-question');
-      questionSpan.innerHTML = this.formatQuestion(exam.question);
+
+      // 题干
+      const stemDiv = content.createDiv('exam-card-question');
+      stemDiv.innerHTML = this.formatStem(exam.stem);
 
       // 选项
-      const options = content.createDiv('exam-card-options');
+      const optionsDiv = content.createDiv('exam-card-options');
       exam.options.forEach((opt) => {
-        const optEl = options.createDiv(
-          'exam-card-option' + (opt.correct ? ' correct' : '')
+        const isCorrect = exam.answer.includes(opt.label);
+        const optEl = optionsDiv.createDiv(
+          'exam-card-option' + (isCorrect ? ' correct' : '')
         );
         const label = optEl.createSpan('exam-card-option-label');
         label.textContent = opt.label;
@@ -120,59 +84,41 @@ export class ExamCardRenderer {
         text.textContent = opt.text;
       });
 
-      // 展开按钮
-      if (exam.analysis || exam.vocab?.length) {
+      // 解析区（可折叠）
+      if (exam.analysis) {
         const expandBtn = card.createDiv('exam-card-expand');
         expandBtn.textContent = '查看解析';
         expandBtn.addEventListener('click', () => {
           card.classList.toggle('expanded');
         });
 
-        // 解析区
-        const analysis = card.createDiv('exam-card-analysis');
-        const analysisInner = analysis.createDiv('exam-card-analysis-inner');
+        const analysisDiv = card.createDiv('exam-card-analysis');
+        const analysisInner = analysisDiv.createDiv('exam-card-analysis-inner');
 
-        if (exam.analysis) {
-          const title = analysisInner.createDiv('exam-card-analysis-title');
-          title.textContent = '详细解析';
-          const contentDiv = analysisInner.createDiv('exam-card-analysis-content');
-          const paragraphs = exam.analysis.split('\n').filter(p => p.trim());
-          if (paragraphs.length > 1) {
-            contentDiv.innerHTML = paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
-          } else {
-            contentDiv.textContent = exam.analysis;
-          }
-        }
+        const title = analysisInner.createDiv('exam-card-analysis-title');
+        title.textContent = '详细解析';
 
-        // 词汇
-        if (exam.vocab?.length) {
-          const vocabSection = analysisInner.createDiv(
-            'exam-card-vocab-section'
-          );
-          const vocabTitle = vocabSection.createDiv('exam-card-vocab-title');
-          vocabTitle.textContent = '相关词汇';
-          const vocabGrid = vocabSection.createDiv('exam-card-vocab-grid');
-          exam.vocab.forEach((v) => {
-            const item = vocabGrid.createDiv('exam-card-vocab-item');
-            const word = item.createDiv('exam-card-vocab-word');
-            word.textContent = v.word;
-            const def = item.createDiv('exam-card-vocab-def');
-            def.textContent = v.def;
-          });
+        const contentDiv = analysisInner.createDiv('exam-card-analysis-content');
+        const paragraphs = exam.analysis.split('\n').filter(p => p.trim());
+        if (paragraphs.length > 1) {
+          contentDiv.innerHTML = paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
+        } else {
+          contentDiv.textContent = exam.analysis;
         }
       }
     } catch (error) {
       const errorDiv = el.createDiv();
-      errorDiv.style.color = 'var(--text-secondary)';
+      errorDiv.style.color = 'var(--text-muted)';
       errorDiv.style.padding = '16px';
       errorDiv.style.borderRadius = '8px';
-      errorDiv.style.backgroundColor = 'var(--bg-section)';
-      errorDiv.style.border = '1px solid var(--border)';
-      errorDiv.textContent = `❌ 考题卡片错误: ${error instanceof Error ? error.message : String(error)}`;
+      errorDiv.style.backgroundColor = 'var(--background-secondary)';
+      errorDiv.style.border = '1px solid var(--background-modifier-border)';
+      errorDiv.textContent = `❌ Exam Plugin: ${error instanceof Error ? error.message : String(error)}`;
     }
   }
 
-  private formatQuestion(question: string): string {
-    return question.replace(/_+/g, '<span class="exam-card-blank"></span>');
+  private formatStem(stem: string): string {
+    // 下划线转填空线
+    return stem.replace(/_+/g, '<span class="exam-card-blank"></span>');
   }
 }
