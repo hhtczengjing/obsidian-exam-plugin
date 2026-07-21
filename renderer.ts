@@ -36,7 +36,7 @@ export class ExamCardRenderer {
     const optionLines = optionsText.trim().split('\n').filter(line => line.trim());
     const options: ExamQuestion['options'] = [];
     for (const line of optionLines) {
-      const match = line.trim().match(/^([A-D])\.\s+(.+?)(\s+\*)?$/);
+      const match = line.trim().match(/^([A-D])\.?\s+(.+?)(\s+\*)?$/);
       if (match) {
         options.push({ label: match[1], text: match[2].trim() });
       }

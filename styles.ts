@@ -75,10 +75,16 @@ export const EXAM_CARD_STYLE = `
 }
 
 .exam-card-source {
+  display: inline-block;
+  background: var(--blue-light);
   color: var(--blue);
   font-weight: 600;
-  margin-right: 8px;
+  font-size: 0.82rem;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-right: 10px;
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .exam-card-question {
@@ -116,44 +122,49 @@ export const EXAM_CARD_STYLE = `
 
 .exam-card-options {
   display: grid;
-  gap: 10px;
+  gap: 0;
   margin-top: 20px;
 }
 
 .exam-card-option {
-  padding: 13px 16px;
-  border-radius: 8px;
-  background: var(--bg-section);
-  border: 1.5px solid var(--border);
+  padding: 10px 0;
+  border-radius: 0;
+  background: transparent;
+  border: none;
   cursor: pointer;
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
   font-size: 0.96rem;
   color: var(--text-primary);
   transition: all 0.2s ease;
 }
 
-.exam-card-option:hover {
+.exam-card-option:hover .exam-card-option-label {
   border-color: var(--blue);
-  background: var(--blue-light);
+  color: var(--blue);
 }
 
 .exam-card-option-label {
   font-family: 'Noto Sans SC', sans-serif;
   font-weight: 600;
-  color: var(--text-primary);
-  min-width: 24px;
-  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-}
-
-.exam-card-option.correct {
-  background: var(--green-light);
-  border-color: var(--green);
+  transition: all 0.2s ease;
 }
 
 .exam-card-option.correct .exam-card-option-label {
-  color: var(--green);
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
 }
 
 .exam-card-option.correct::after {
