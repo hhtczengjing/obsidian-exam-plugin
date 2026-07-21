@@ -61,6 +61,12 @@ export class ExamCardRenderer {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv('exam-card-wrapper');
 
+      // 题号角标：卡片左上角
+      if (exam.num) {
+        const badge = wrapper.createDiv('exam-card-badge');
+        badge.textContent = exam.num.padStart(2, '0');
+      }
+
       const card = wrapper.createDiv('exam-card');
       const content = card.createDiv('exam-card-content');
 
@@ -74,16 +80,9 @@ export class ExamCardRenderer {
       });
       stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
 
-      // 在题干首段插入：题号 + 来源标签
+      // 在题干首段插入来源标签
       const firstP = stemDiv.querySelector('p');
       const target = firstP || stemDiv;
-
-      if (exam.num) {
-        const badge = document.createElement('span');
-        badge.className = 'exam-card-badge';
-        badge.textContent = exam.num;
-        target.insertBefore(badge, target.firstChild);
-      }
 
       const sourceSpan = document.createElement('span');
       sourceSpan.className = 'exam-card-source';

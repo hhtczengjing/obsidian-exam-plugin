@@ -75,6 +75,10 @@ var ExamCardRenderer = class {
     try {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv("exam-card-wrapper");
+      if (exam.num) {
+        const badge = wrapper.createDiv("exam-card-badge");
+        badge.textContent = exam.num.padStart(2, "0");
+      }
       const card = wrapper.createDiv("exam-card");
       const content = card.createDiv("exam-card-content");
       const stemDiv = content.createDiv("exam-card-question");
@@ -85,12 +89,6 @@ var ExamCardRenderer = class {
       stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
       const firstP = stemDiv.querySelector("p");
       const target = firstP || stemDiv;
-      if (exam.num) {
-        const badge = document.createElement("span");
-        badge.className = "exam-card-badge";
-        badge.textContent = exam.num;
-        target.insertBefore(badge, target.firstChild);
-      }
       const sourceSpan = document.createElement("span");
       sourceSpan.className = "exam-card-source";
       sourceSpan.textContent = `\uFF08${exam.source}\uFF09`;
@@ -168,19 +166,18 @@ var EXAM_CARD_STYLE = `
 }
 
 .exam-card-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  margin-right: 6px;
-  border-radius: 50%;
-  background: var(--blue);
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--blue) 0%, #5a67d8 100%);
   color: #fff;
   font-size: 0.75rem;
   font-weight: 700;
-  flex-shrink: 0;
-  vertical-align: middle;
+  font-family: 'Noto Sans SC', sans-serif;
+  line-height: 1.4;
+  z-index: 10;
 }
 
 .exam-card {
