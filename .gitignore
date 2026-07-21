@@ -3,6 +3,8 @@ node_modules/
 
 # Build output (main.js is committed for distribution)
 *.js.map
+obsidian-exam-plugin.zip
+release/
 
 # IDE
 .vscode/
