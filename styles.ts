@@ -75,16 +75,16 @@ export const EXAM_CARD_STYLE = `
 }
 
 .exam-card-source {
-  display: inline-block;
+  display: inline;
   background: var(--blue-light);
   color: var(--blue);
   font-weight: 600;
-  font-size: 0.82rem;
-  padding: 2px 10px;
-  border-radius: 12px;
-  margin-right: 10px;
+  font-size: 0.85rem;
+  padding: 1px 8px;
+  border-radius: 4px;
+  margin-right: 8px;
   white-space: nowrap;
-  vertical-align: middle;
+  vertical-align: baseline;
 }
 
 .exam-card-question {
@@ -165,14 +165,6 @@ export const EXAM_CARD_STYLE = `
   background: var(--green);
   border-color: var(--green);
   color: #fff;
-}
-
-.exam-card-option.correct::after {
-  content: '✓';
-  margin-left: auto;
-  color: var(--green);
-  font-weight: bold;
-  font-size: 1.1rem;
 }
 
 .exam-card-expand {
