@@ -26,7 +26,7 @@ export class ExamCardRenderer {
     }
 
     const number = parseInt(numberMatch[1]);
-    const source = numberMatch[2];
+    const sourceName = numberMatch[2];
 
     // 解析题干（多行，直到遇到选项）
     let question = '';
@@ -83,7 +83,7 @@ export class ExamCardRenderer {
       }
     }
 
-    return { number, source, question, options, analysis, vocab };
+    return { number, source: sourceName, question, options, analysis, vocab };
   }
 
   render(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
