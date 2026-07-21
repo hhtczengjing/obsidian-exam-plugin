@@ -63,7 +63,7 @@ export class ExamCardRenderer {
 
       // 题号角标（卡片外侧左上角）
       if (exam.num) {
-        wrapper.style.paddingLeft = '48px';
+        wrapper.style.paddingLeft = '36px';
         const badge = wrapper.createDiv('exam-card-badge');
         badge.textContent = exam.num;
       }

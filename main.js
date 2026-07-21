@@ -76,7 +76,7 @@ var ExamCardRenderer = class {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv("exam-card-wrapper");
       if (exam.num) {
-        wrapper.style.paddingLeft = "48px";
+        wrapper.style.paddingLeft = "36px";
         const badge = wrapper.createDiv("exam-card-badge");
         badge.textContent = exam.num;
       }
@@ -172,7 +172,9 @@ var EXAM_CARD_STYLE = `
 .exam-card-badge {
   position: absolute;
   top: 14px;
-  left: 8px;
+  left: 4px;
+  width: 28px;
+  text-align: right;
   font-family: 'Noto Sans SC', sans-serif;
   font-weight: 600;
   font-size: 1.2rem;
