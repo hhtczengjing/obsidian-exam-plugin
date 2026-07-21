@@ -414,10 +414,14 @@ var EXAM_CARD_STYLE = `
 // main.ts
 var ExamCardPlugin = class extends import_obsidian.Plugin {
   async onload() {
-    this.registerMarkdownCodeBlockProcessor("exam", (source, el, ctx) => {
+    const render = (source, el, ctx) => {
       const renderer = new ExamCardRenderer();
       renderer.render(source, el, ctx);
-    });
+    };
+    this.registerMarkdownCodeBlockProcessor("exam", render);
+    for (let i = 1; i <= 9; i++) {
+      this.registerMarkdownCodeBlockProcessor(`exam${i}`, render);
+    }
     const style = document.createElement("style");
     style.textContent = EXAM_CARD_STYLE;
     document.head.appendChild(style);
