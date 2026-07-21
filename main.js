@@ -76,15 +76,24 @@ var ExamCardRenderer = class {
       const wrapper = el.createDiv("exam-card-wrapper");
       const card = wrapper.createDiv("exam-card");
       const content = card.createDiv("exam-card-content");
-      const header = content.createDiv("exam-card-header");
-      const sourceSpan = header.createSpan("exam-card-source");
-      sourceSpan.textContent = exam.source;
       const stemDiv = content.createDiv("exam-card-question");
       await this.renderMarkdown(exam.stem, stemDiv, ctx.sourcePath);
       stemDiv.querySelectorAll("p, li, h1, h2, h3, h4, h5, h6, blockquote").forEach((el2) => {
         el2.innerHTML = el2.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
       });
       stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
+      const firstP = stemDiv.querySelector("p");
+      if (firstP) {
+        const sourceSpan = document.createElement("span");
+        sourceSpan.className = "exam-card-source";
+        sourceSpan.textContent = exam.source;
+        firstP.insertBefore(sourceSpan, firstP.firstChild);
+      } else {
+        const sourceSpan = document.createElement("span");
+        sourceSpan.className = "exam-card-source";
+        sourceSpan.textContent = exam.source;
+        stemDiv.insertBefore(sourceSpan, stemDiv.firstChild);
+      }
       const optionsDiv = content.createDiv("exam-card-options");
       exam.options.forEach((opt) => {
         const isCorrect = exam.answer.includes(opt.label);
@@ -199,18 +208,11 @@ var EXAM_CARD_STYLE = `
   z-index: 1;
 }
 
-.exam-card-header {
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 0.96rem;
-  margin-bottom: 18px;
-}
-
 .exam-card-source {
   color: var(--blue);
-  font-weight: 500;
+  font-weight: 600;
   margin-right: 8px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .exam-card-question {

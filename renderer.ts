@@ -61,21 +61,30 @@ export class ExamCardRenderer {
       const card = wrapper.createDiv('exam-card');
       const content = card.createDiv('exam-card-content');
 
-      // 头部：来源
-      const header = content.createDiv('exam-card-header');
-      const sourceSpan = header.createSpan('exam-card-source');
-      sourceSpan.textContent = exam.source;
-
-      // 题干 — 用 MarkdownRenderer 渲染，支持下划线转填空线
+      // 题干容器：来源标签融入题干首行
       const stemDiv = content.createDiv('exam-card-question');
       await this.renderMarkdown(exam.stem, stemDiv, ctx.sourcePath);
 
-      // 填空线替换：把渲染后的 <p>___ 替换为填空线 span
+      // 填空线替换
       stemDiv.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, blockquote').forEach(el => {
         el.innerHTML = el.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
       });
-      // 也处理直接在容器中的文本节点
       stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
+
+      // 将来源标签插入题干首段，与题干同行显示
+      const firstP = stemDiv.querySelector('p');
+      if (firstP) {
+        const sourceSpan = document.createElement('span');
+        sourceSpan.className = 'exam-card-source';
+        sourceSpan.textContent = exam.source;
+        firstP.insertBefore(sourceSpan, firstP.firstChild);
+      } else {
+        // 如果 stem 没有产生 <p>（纯文本），在前面插入
+        const sourceSpan = document.createElement('span');
+        sourceSpan.className = 'exam-card-source';
+        sourceSpan.textContent = exam.source;
+        stemDiv.insertBefore(sourceSpan, stemDiv.firstChild);
+      }
 
       // 选项
       const optionsDiv = content.createDiv('exam-card-options');

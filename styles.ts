@@ -74,18 +74,11 @@ export const EXAM_CARD_STYLE = `
   z-index: 1;
 }
 
-.exam-card-header {
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 0.96rem;
-  margin-bottom: 18px;
-}
-
 .exam-card-source {
   color: var(--blue);
-  font-weight: 500;
+  font-weight: 600;
   margin-right: 8px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .exam-card-question {
