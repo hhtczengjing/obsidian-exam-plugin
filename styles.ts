@@ -29,26 +29,13 @@ export const EXAM_CARD_STYLE = `
 
 .exam-card-wrapper {
   position: relative;
-  margin: 24px 0;
-}
-
-.exam-card-badge {
-  position: absolute;
-  top: -4px;
-  left: 24px;
-  font-family: 'Noto Sans SC', sans-serif;
-  font-weight: 300;
-  font-size: 3.5rem;
-  color: var(--blue);
-  opacity: 0.08;
-  z-index: 0;
+  margin: 16px 0;
 }
 
 .exam-card {
   background: var(--bg-card);
-  border-radius: 12px;
-  border: 1px solid var(--blue);
-  box-shadow: 0 4px 12px rgba(49, 130, 206, 0.08);
+  border-radius: 8px;
+  border: 1px solid var(--border);
   position: relative;
   overflow: hidden;
 }
@@ -59,32 +46,33 @@ export const EXAM_CARD_STYLE = `
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
+  height: 3px;
   background: linear-gradient(90deg, var(--blue) 0%, #5a67d8 100%);
-  opacity: 1;
-}
-
-.exam-card:hover {
-  box-shadow: 0 6px 16px rgba(49, 130, 206, 0.12);
 }
 
 .exam-card-content {
-  padding: 32px;
+  padding: 20px 24px;
   position: relative;
   z-index: 1;
 }
 
 .exam-card-source {
-  display: inline;
-  background: var(--blue-light);
   color: var(--blue);
   font-weight: 600;
-  font-size: 0.85rem;
-  padding: 1px 8px;
-  border-radius: 4px;
-  margin-right: 8px;
+  margin-right: 6px;
   white-space: nowrap;
-  vertical-align: baseline;
+}
+
+.exam-card-source::after {
+  content: '';
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+  margin-left: 8px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
 }
 
 .exam-card-question {
@@ -123,18 +111,18 @@ export const EXAM_CARD_STYLE = `
 .exam-card-options {
   display: grid;
   gap: 0;
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .exam-card-option {
-  padding: 10px 0;
+  padding: 8px 0;
   border-radius: 0;
   background: transparent;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   font-size: 0.96rem;
   color: var(--text-primary);
   transition: all 0.2s ease;
@@ -168,14 +156,14 @@ export const EXAM_CARD_STYLE = `
 }
 
 .exam-card-expand {
-  padding: 14px 32px;
+  padding: 10px 24px;
   border-top: 1px solid var(--border);
   background: var(--bg-section);
   text-align: center;
   cursor: pointer;
   user-select: none;
   font-family: 'Noto Sans SC', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--blue);
   font-weight: 500;
   display: flex;
@@ -214,7 +202,7 @@ export const EXAM_CARD_STYLE = `
 }
 
 .exam-card-analysis-inner {
-  padding: 24px 32px;
+  padding: 20px 24px;
 }
 
 .exam-card-analysis-title {
@@ -381,7 +369,11 @@ export const EXAM_CARD_STYLE = `
 
 @media (max-width: 640px) {
   .exam-card-content {
-    padding: 24px;
+    padding: 16px;
+  }
+
+  .exam-card-analysis-inner {
+    padding: 16px;
   }
 
   .exam-card-vocab-grid {
