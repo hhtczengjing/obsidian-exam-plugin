@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output (main.js is committed for distribution)
+*.js.map
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Obsidian (useful when developing inside a vault)
+.obsidian/
+data.json
+hot-reload
