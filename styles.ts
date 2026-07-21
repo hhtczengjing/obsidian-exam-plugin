@@ -97,15 +97,11 @@ export const EXAM_CARD_STYLE = `
 
 .exam-card-blank {
   display: inline-block;
-  min-width: 120px;
-  border-bottom: 3px solid var(--blue);
-  margin: 0 6px;
+  min-width: 60px;
+  border-bottom: 2px solid var(--blue);
+  margin: 0 4px;
   position: relative;
   top: 3px;
-  background: linear-gradient(to right, transparent 0%, var(--blue) 100%);
-  background-position: bottom;
-  background-size: 100% 3px;
-  background-repeat: no-repeat;
 }
 
 .exam-card-options {
