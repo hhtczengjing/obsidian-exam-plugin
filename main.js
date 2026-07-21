@@ -76,6 +76,7 @@ var ExamCardRenderer = class {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv("exam-card-wrapper");
       if (exam.num) {
+        wrapper.style.paddingLeft = "48px";
         const badge = wrapper.createDiv("exam-card-badge");
         badge.textContent = exam.num;
       }
@@ -170,13 +171,12 @@ var EXAM_CARD_STYLE = `
 
 .exam-card-badge {
   position: absolute;
-  top: 2px;
-  left: 16px;
+  top: 14px;
+  left: 8px;
   font-family: 'Noto Sans SC', sans-serif;
-  font-weight: 400;
-  font-size: 2.2rem;
-  color: var(--blue);
-  opacity: 0.15;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
   z-index: 10;
   pointer-events: none;
   user-select: none;
@@ -519,14 +519,10 @@ var EXAM_CARD_STYLE = `
 // main.ts
 var ExamCardPlugin = class extends import_obsidian2.Plugin {
   async onload() {
-    const render = (source, el, ctx) => {
+    this.registerMarkdownCodeBlockProcessor("exam", (source, el, ctx) => {
       const renderer = new ExamCardRenderer(this);
       renderer.render(source, el, ctx);
-    };
-    this.registerMarkdownCodeBlockProcessor("exam", render);
-    for (let i = 1; i <= 99; i++) {
-      this.registerMarkdownCodeBlockProcessor(`exam${i}`, render);
-    }
+    });
     const style = document.createElement("style");
     style.textContent = EXAM_CARD_STYLE;
     document.head.appendChild(style);

@@ -61,8 +61,9 @@ export class ExamCardRenderer {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv('exam-card-wrapper');
 
-      // 题号角标
+      // 题号角标（卡片外侧左上角）
       if (exam.num) {
+        wrapper.style.paddingLeft = '48px';
         const badge = wrapper.createDiv('exam-card-badge');
         badge.textContent = exam.num;
       }

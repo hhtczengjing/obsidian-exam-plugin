@@ -34,13 +34,12 @@ export const EXAM_CARD_STYLE = `
 
 .exam-card-badge {
   position: absolute;
-  top: 2px;
-  left: 16px;
+  top: 14px;
+  left: 8px;
   font-family: 'Noto Sans SC', sans-serif;
-  font-weight: 400;
-  font-size: 2.2rem;
-  color: var(--blue);
-  opacity: 0.15;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
   z-index: 10;
   pointer-events: none;
   user-select: none;
