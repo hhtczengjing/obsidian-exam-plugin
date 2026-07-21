@@ -419,7 +419,7 @@ var ExamCardPlugin = class extends import_obsidian.Plugin {
       renderer.render(source, el, ctx);
     };
     this.registerMarkdownCodeBlockProcessor("exam", render);
-    for (let i = 1; i <= 9; i++) {
+    for (let i = 1; i <= 99; i++) {
       this.registerMarkdownCodeBlockProcessor(`exam${i}`, render);
     }
     const style = document.createElement("style");

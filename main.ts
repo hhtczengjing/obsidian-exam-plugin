@@ -10,8 +10,8 @@ export default class ExamCardPlugin extends Plugin {
       renderer.render(source, el, ctx);
     };
     this.registerMarkdownCodeBlockProcessor('exam', render);
-    // 同时注册带编号的别名 exam1, exam2, ... exam9
-    for (let i = 1; i <= 9; i++) {
+    // 同时注册带编号的别名 exam1, exam2, ... exam99
+    for (let i = 1; i <= 99; i++) {
       this.registerMarkdownCodeBlockProcessor(`exam${i}`, render);
     }
 
