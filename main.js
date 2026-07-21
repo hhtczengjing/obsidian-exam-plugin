@@ -26,10 +26,14 @@ var __toModule = (module2) => {
 __export(exports, {
   default: () => ExamCardPlugin
 });
-var import_obsidian = __toModule(require("obsidian"));
+var import_obsidian2 = __toModule(require("obsidian"));
 
 // renderer.ts
+var import_obsidian = __toModule(require("obsidian"));
 var ExamCardRenderer = class {
+  constructor(component) {
+    this.component = component;
+  }
   parseExamBlock(source) {
     const getTagContent = (tag) => {
       const regex = new RegExp(`<${tag}>(.*?)</${tag}>`, "s");
@@ -66,7 +70,7 @@ var ExamCardRenderer = class {
     }
     return { source: sourceText, stem, options, answer, analysis };
   }
-  render(source, el, ctx) {
+  async render(source, el, ctx) {
     try {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv("exam-card-wrapper");
@@ -76,7 +80,11 @@ var ExamCardRenderer = class {
       const sourceSpan = header.createSpan("exam-card-source");
       sourceSpan.textContent = exam.source;
       const stemDiv = content.createDiv("exam-card-question");
-      stemDiv.innerHTML = this.formatStem(exam.stem);
+      await this.renderMarkdown(exam.stem, stemDiv, ctx.sourcePath);
+      stemDiv.querySelectorAll("p, li, h1, h2, h3, h4, h5, h6, blockquote").forEach((el2) => {
+        el2.innerHTML = el2.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
+      });
+      stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
       const optionsDiv = content.createDiv("exam-card-options");
       exam.options.forEach((opt) => {
         const isCorrect = exam.answer.includes(opt.label);
@@ -97,12 +105,7 @@ var ExamCardRenderer = class {
         const title = analysisInner.createDiv("exam-card-analysis-title");
         title.textContent = "\u8BE6\u7EC6\u89E3\u6790";
         const contentDiv = analysisInner.createDiv("exam-card-analysis-content");
-        const paragraphs = exam.analysis.split("\n").filter((p) => p.trim());
-        if (paragraphs.length > 1) {
-          contentDiv.innerHTML = paragraphs.map((p) => `<p>${p.trim()}</p>`).join("");
-        } else {
-          contentDiv.textContent = exam.analysis;
-        }
+        await this.renderMarkdown(exam.analysis, contentDiv, ctx.sourcePath);
       }
     } catch (error) {
       const errorDiv = el.createDiv();
@@ -114,8 +117,8 @@ var ExamCardRenderer = class {
       errorDiv.textContent = `\u274C Exam Plugin: ${error instanceof Error ? error.message : String(error)}`;
     }
   }
-  formatStem(stem) {
-    return stem.replace(/_+/g, '<span class="exam-card-blank"></span>');
+  async renderMarkdown(markdown, el, sourcePath) {
+    await import_obsidian.MarkdownRenderer.renderMarkdown(markdown, el, sourcePath, this.component);
   }
 };
 
@@ -214,6 +217,20 @@ var EXAM_CARD_STYLE = `
   color: var(--text-primary);
   font-size: 0.96rem;
   line-height: 1.8;
+}
+
+.exam-card-question p {
+  margin-bottom: 8px;
+}
+
+.exam-card-question img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.exam-card-question strong {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .exam-card-blank {
@@ -358,6 +375,97 @@ var EXAM_CARD_STYLE = `
   font-weight: 600;
 }
 
+.exam-card-analysis-content em {
+  color: var(--text-secondary);
+}
+
+.exam-card-analysis-content ul,
+.exam-card-analysis-content ol {
+  padding-left: 1.5em;
+  margin-bottom: 12px;
+}
+
+.exam-card-analysis-content li {
+  margin-bottom: 4px;
+}
+
+.exam-card-analysis-content h1,
+.exam-card-analysis-content h2,
+.exam-card-analysis-content h3,
+.exam-card-analysis-content h4,
+.exam-card-analysis-content h5,
+.exam-card-analysis-content h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 16px 0 8px 0;
+}
+
+.exam-card-analysis-content h1 { font-size: 1.4em; }
+.exam-card-analysis-content h2 { font-size: 1.2em; }
+.exam-card-analysis-content h3 { font-size: 1.1em; }
+.exam-card-analysis-content h4 { font-size: 1em; }
+
+.exam-card-analysis-content code {
+  background: var(--bg-section);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: var(--blue);
+}
+
+.exam-card-analysis-content pre {
+  background: var(--bg-section);
+  padding: 12px 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+}
+
+.exam-card-analysis-content pre code {
+  background: none;
+  padding: 0;
+  color: var(--text-primary);
+}
+
+.exam-card-analysis-content blockquote {
+  border-left: 3px solid var(--blue);
+  padding-left: 16px;
+  margin: 12px 0;
+  color: var(--text-secondary);
+}
+
+.exam-card-analysis-content a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.exam-card-analysis-content a:hover {
+  text-decoration: underline;
+}
+
+.exam-card-analysis-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+}
+
+.exam-card-analysis-content th,
+.exam-card-analysis-content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.exam-card-analysis-content th {
+  background: var(--bg-section);
+  font-weight: 600;
+}
+
+.exam-card-analysis-content img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
 .exam-card-vocab-section {
   margin-top: 20px;
   padding-top: 20px;
@@ -412,10 +520,10 @@ var EXAM_CARD_STYLE = `
 `;
 
 // main.ts
-var ExamCardPlugin = class extends import_obsidian.Plugin {
+var ExamCardPlugin = class extends import_obsidian2.Plugin {
   async onload() {
     const render = (source, el, ctx) => {
-      const renderer = new ExamCardRenderer();
+      const renderer = new ExamCardRenderer(this);
       renderer.render(source, el, ctx);
     };
     this.registerMarkdownCodeBlockProcessor("exam", render);

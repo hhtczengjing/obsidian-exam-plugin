@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext } from 'obsidian';
+import { MarkdownPostProcessorContext, MarkdownRenderer, Component } from 'obsidian';
 
 interface ExamQuestion {
   source: string;
@@ -9,8 +9,13 @@ interface ExamQuestion {
 }
 
 export class ExamCardRenderer {
+  private component: Component;
+
+  constructor(component: Component) {
+    this.component = component;
+  }
+
   parseExamBlock(source: string): ExamQuestion {
-    // 解析 XML 标签
     const getTagContent = (tag: string): string => {
       const regex = new RegExp(`<${tag}>(.*?)</${tag}>`, 's');
       const match = source.match(regex);
@@ -28,7 +33,6 @@ export class ExamCardRenderer {
     if (!optionsText) throw new Error('<options> 标签不能为空');
     if (!answerText) throw new Error('<answer> 标签不能为空');
 
-    // 解析选项：每行 A. xxx / A. xxx * 格式，* 标记正确答案
     const optionLines = optionsText.trim().split('\n').filter(line => line.trim());
     const options: ExamQuestion['options'] = [];
     for (const line of optionLines) {
@@ -42,7 +46,6 @@ export class ExamCardRenderer {
       throw new Error('<options> 中至少需要一个选项');
     }
 
-    // 解析答案：支持单个 B 或多选 A,C
     const answer = answerText.split(',').map(s => s.trim()).filter(Boolean);
     if (answer.length === 0) {
       throw new Error('<answer> 标签格式错误');
@@ -51,15 +54,11 @@ export class ExamCardRenderer {
     return { source: sourceText, stem, options, answer, analysis };
   }
 
-  render(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+  async render(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
     try {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv('exam-card-wrapper');
-
-      // 卡片容器
       const card = wrapper.createDiv('exam-card');
-
-      // 内容区
       const content = card.createDiv('exam-card-content');
 
       // 头部：来源
@@ -67,9 +66,16 @@ export class ExamCardRenderer {
       const sourceSpan = header.createSpan('exam-card-source');
       sourceSpan.textContent = exam.source;
 
-      // 题干
+      // 题干 — 用 MarkdownRenderer 渲染，支持下划线转填空线
       const stemDiv = content.createDiv('exam-card-question');
-      stemDiv.innerHTML = this.formatStem(exam.stem);
+      await this.renderMarkdown(exam.stem, stemDiv, ctx.sourcePath);
+
+      // 填空线替换：把渲染后的 <p>___ 替换为填空线 span
+      stemDiv.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, blockquote').forEach(el => {
+        el.innerHTML = el.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
+      });
+      // 也处理直接在容器中的文本节点
+      stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
 
       // 选项
       const optionsDiv = content.createDiv('exam-card-options');
@@ -84,7 +90,7 @@ export class ExamCardRenderer {
         text.textContent = opt.text;
       });
 
-      // 解析区（可折叠）
+      // 解析区（可折叠，Markdown 渲染）
       if (exam.analysis) {
         const expandBtn = card.createDiv('exam-card-expand');
         expandBtn.textContent = '查看解析';
@@ -99,12 +105,7 @@ export class ExamCardRenderer {
         title.textContent = '详细解析';
 
         const contentDiv = analysisInner.createDiv('exam-card-analysis-content');
-        const paragraphs = exam.analysis.split('\n').filter(p => p.trim());
-        if (paragraphs.length > 1) {
-          contentDiv.innerHTML = paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
-        } else {
-          contentDiv.textContent = exam.analysis;
-        }
+        await this.renderMarkdown(exam.analysis, contentDiv, ctx.sourcePath);
       }
     } catch (error) {
       const errorDiv = el.createDiv();
@@ -117,8 +118,12 @@ export class ExamCardRenderer {
     }
   }
 
-  private formatStem(stem: string): string {
-    // 下划线转填空线
-    return stem.replace(/_+/g, '<span class="exam-card-blank"></span>');
+  private async renderMarkdown(markdown: string, el: HTMLElement, sourcePath: string) {
+    await MarkdownRenderer.renderMarkdown(
+      markdown,
+      el,
+      sourcePath,
+      this.component
+    );
   }
 }

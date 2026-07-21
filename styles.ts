@@ -94,6 +94,20 @@ export const EXAM_CARD_STYLE = `
   line-height: 1.8;
 }
 
+.exam-card-question p {
+  margin-bottom: 8px;
+}
+
+.exam-card-question img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.exam-card-question strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
 .exam-card-blank {
   display: inline-block;
   min-width: 120px;
@@ -234,6 +248,97 @@ export const EXAM_CARD_STYLE = `
 .exam-card-analysis-content strong {
   color: var(--blue);
   font-weight: 600;
+}
+
+.exam-card-analysis-content em {
+  color: var(--text-secondary);
+}
+
+.exam-card-analysis-content ul,
+.exam-card-analysis-content ol {
+  padding-left: 1.5em;
+  margin-bottom: 12px;
+}
+
+.exam-card-analysis-content li {
+  margin-bottom: 4px;
+}
+
+.exam-card-analysis-content h1,
+.exam-card-analysis-content h2,
+.exam-card-analysis-content h3,
+.exam-card-analysis-content h4,
+.exam-card-analysis-content h5,
+.exam-card-analysis-content h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 16px 0 8px 0;
+}
+
+.exam-card-analysis-content h1 { font-size: 1.4em; }
+.exam-card-analysis-content h2 { font-size: 1.2em; }
+.exam-card-analysis-content h3 { font-size: 1.1em; }
+.exam-card-analysis-content h4 { font-size: 1em; }
+
+.exam-card-analysis-content code {
+  background: var(--bg-section);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: var(--blue);
+}
+
+.exam-card-analysis-content pre {
+  background: var(--bg-section);
+  padding: 12px 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+}
+
+.exam-card-analysis-content pre code {
+  background: none;
+  padding: 0;
+  color: var(--text-primary);
+}
+
+.exam-card-analysis-content blockquote {
+  border-left: 3px solid var(--blue);
+  padding-left: 16px;
+  margin: 12px 0;
+  color: var(--text-secondary);
+}
+
+.exam-card-analysis-content a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.exam-card-analysis-content a:hover {
+  text-decoration: underline;
+}
+
+.exam-card-analysis-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+}
+
+.exam-card-analysis-content th,
+.exam-card-analysis-content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.exam-card-analysis-content th {
+  background: var(--bg-section);
+  font-weight: 600;
+}
+
+.exam-card-analysis-content img {
+  max-width: 100%;
+  border-radius: 8px;
 }
 
 .exam-card-vocab-section {

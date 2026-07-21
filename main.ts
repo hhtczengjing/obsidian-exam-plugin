@@ -6,7 +6,7 @@ export default class ExamCardPlugin extends Plugin {
   async onload() {
     // 注册代码块处理器，支持 exam、exam1、exam2 等
     const render = (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-      const renderer = new ExamCardRenderer();
+      const renderer = new ExamCardRenderer(this);
       renderer.render(source, el, ctx);
     };
     this.registerMarkdownCodeBlockProcessor('exam', render);
