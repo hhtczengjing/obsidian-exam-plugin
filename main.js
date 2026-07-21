@@ -41,6 +41,7 @@ var ExamCardRenderer = class {
       return match ? match[1].trim() : "";
     };
     const sourceText = getTagContent("source");
+    const num = getTagContent("num");
     const stem = getTagContent("stem");
     const optionsText = getTagContent("options");
     const answerText = getTagContent("answer");
@@ -68,12 +69,16 @@ var ExamCardRenderer = class {
     if (answer.length === 0) {
       throw new Error("<answer> \u6807\u7B7E\u683C\u5F0F\u9519\u8BEF");
     }
-    return { source: sourceText, stem, options, answer, analysis };
+    return { num: num || void 0, source: sourceText, stem, options, answer, analysis };
   }
   async render(source, el, ctx) {
     try {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv("exam-card-wrapper");
+      if (exam.num) {
+        const badge = wrapper.createDiv("exam-card-badge");
+        badge.textContent = exam.num;
+      }
       const card = wrapper.createDiv("exam-card");
       const content = card.createDiv("exam-card-content");
       const stemDiv = content.createDiv("exam-card-question");
@@ -161,6 +166,20 @@ var EXAM_CARD_STYLE = `
 .exam-card-wrapper {
   position: relative;
   margin: 16px 0;
+}
+
+.exam-card-badge {
+  position: absolute;
+  top: -8px;
+  left: 16px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-weight: 300;
+  font-size: 3.5rem;
+  color: var(--blue);
+  opacity: 0.08;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
 }
 
 .exam-card {

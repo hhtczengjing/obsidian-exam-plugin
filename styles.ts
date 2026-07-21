@@ -32,6 +32,20 @@ export const EXAM_CARD_STYLE = `
   margin: 16px 0;
 }
 
+.exam-card-badge {
+  position: absolute;
+  top: -8px;
+  left: 16px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-weight: 300;
+  font-size: 3.5rem;
+  color: var(--blue);
+  opacity: 0.08;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
 .exam-card {
   background: var(--bg-card);
   border-radius: 8px;

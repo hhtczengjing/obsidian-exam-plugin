@@ -1,6 +1,7 @@
 import { MarkdownPostProcessorContext, MarkdownRenderer, Component } from 'obsidian';
 
 interface ExamQuestion {
+  num?: string;
   source: string;
   stem: string;
   options: { label: string; text: string }[];
@@ -23,6 +24,7 @@ export class ExamCardRenderer {
     };
 
     const sourceText = getTagContent('source');
+    const num = getTagContent('num');
     const stem = getTagContent('stem');
     const optionsText = getTagContent('options');
     const answerText = getTagContent('answer');
@@ -51,13 +53,20 @@ export class ExamCardRenderer {
       throw new Error('<answer> 标签格式错误');
     }
 
-    return { source: sourceText, stem, options, answer, analysis };
+    return { num: num || undefined, source: sourceText, stem, options, answer, analysis };
   }
 
   async render(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
     try {
       const exam = this.parseExamBlock(source);
       const wrapper = el.createDiv('exam-card-wrapper');
+
+      // 题号角标
+      if (exam.num) {
+        const badge = wrapper.createDiv('exam-card-badge');
+        badge.textContent = exam.num;
+      }
+
       const card = wrapper.createDiv('exam-card');
       const content = card.createDiv('exam-card-content');
 
