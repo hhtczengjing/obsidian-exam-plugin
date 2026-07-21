@@ -170,14 +170,14 @@ var EXAM_CARD_STYLE = `
 
 .exam-card-badge {
   position: absolute;
-  top: -8px;
+  top: 2px;
   left: 16px;
   font-family: 'Noto Sans SC', sans-serif;
-  font-weight: 300;
-  font-size: 3.5rem;
+  font-weight: 400;
+  font-size: 2.2rem;
   color: var(--blue);
-  opacity: 0.08;
-  z-index: 0;
+  opacity: 0.15;
+  z-index: 10;
   pointer-events: none;
   user-select: none;
 }
