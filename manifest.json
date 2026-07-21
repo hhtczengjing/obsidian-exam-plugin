@@ -1,0 +1,11 @@
+{
+  "id": "obsidian-exam-plugin",
+  "name": "Exam Plugin",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Render exam questions as beautiful interactive cards",
+  "author": "zengjing",
+  "authorUrl": "https://www.devzeng.com",
+  "fundingUrl": "https://buymeacoffee.com",
+  "isDesktopOnly": false
+}
