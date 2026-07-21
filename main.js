@@ -167,11 +167,11 @@ var EXAM_CARD_STYLE = `
 
 .exam-card-badge {
   position: absolute;
-  top: -1px;
-  left: -1px;
+  top: 0;
+  left: 0;
   padding: 3px 10px;
-  border-radius: 4px;
-  background: linear-gradient(135deg, var(--blue) 0%, #5a67d8 100%);
+  border-radius: 8px 0 8px 0;
+  background: var(--blue);
   color: #fff;
   font-size: 0.75rem;
   font-weight: 700;
