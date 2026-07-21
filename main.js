@@ -182,7 +182,7 @@ var EXAM_CARD_STYLE = `
 }
 
 .exam-card-content {
-  padding: 20px 24px;
+  padding: 16px 24px;
   position: relative;
   z-index: 1;
 }
@@ -201,7 +201,7 @@ var EXAM_CARD_STYLE = `
 }
 
 .exam-card-question p {
-  margin-bottom: 8px;
+  margin: 0;
 }
 
 .exam-card-question img {
@@ -271,7 +271,7 @@ var EXAM_CARD_STYLE = `
 }
 
 .exam-card-expand {
-  padding: 10px 24px;
+  padding: 8px 24px;
   border-top: 1px solid var(--border);
   background: var(--bg-section);
   text-align: center;
@@ -317,7 +317,7 @@ var EXAM_CARD_STYLE = `
 }
 
 .exam-card-analysis-inner {
-  padding: 20px 24px;
+  padding: 16px 24px;
 }
 
 .exam-card-analysis-title {
