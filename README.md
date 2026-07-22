@@ -4,12 +4,13 @@
 
 ## 功能特性
 
-- 📝 **XML 标签格式** — 使用 `<source>`、`<stem>`、`<options>`、`<answer>`、`<analysis>` 标签定义题目
-- 🎨 **精美卡片设计** — 现代化卡片界面，渐变顶栏
+- 📝 **XML 标签格式** — 使用 `<num>`、`<source>`、`<stem>`、`<options>`、`<answer>`、`<analysis>` 标签定义题目
+- 🔢 **题号角标** — 支持 `<num>` 标签，显示为卡片左上角蓝色角标
+- 🎨 **精美卡片设计** — 现代化卡片界面，渐变顶部装饰线
 - 🌓 **深色/浅色主题** — 自动适配 Obsidian 主题
 - ✅ **正确答案高亮** — 正确选项绿色边框 + 勾号标记
 - 🖊️ **填空支持** — 下划线 `___` 自动渲染为填空线
-- 🔍 **可折叠解析** — 点击「查看解析」展开详细分析
+- 🔍 **可折叠解析** — 点击「查看解析」展开详细分析（支持 Markdown）
 - 📱 **响应式设计** — 适配移动端屏幕
 - ⚠️ **错误提示** — 格式错误时显示友好提示
 
@@ -21,17 +22,18 @@
 
 ````markdown
 ```exam
+<num>1</num>
 <source>2022年高考英语</source>
 <stem>
 The company aims to ___ its market share by 20% next year.
 </stem>
 <options>
-A. increase *
+A. increase
 B. decrease
 C. maintain
 D. ignore
 </options>
-<answer>B</answer>
+<answer>A</answer>
 <analysis>
 increase 表示"增加"，decrease 表示"减少"。
 根据句意"公司将目标明年增加 20% 市场份额"，应选 A。
@@ -39,28 +41,28 @@ increase 表示"增加"，decrease 表示"减少"。
 ```
 ````
 
-### 渲染效果
-
 ### 标签说明
 
 | 标签 | 说明 | 必需 |
 |------|------|------|
-| `<source>` | 题目来源（如 "2022年高考英语"），显示在题干上方蓝色高亮 | ✅ |
-| `<stem>` | 题干内容，支持下划线 `___` 转填空线 | ✅ |
-| `<options>` | 选项列表，每行 `字母. 内容`，正确答案末尾加 `*` | ✅ |
+| `<num>` | 题号，显示为卡片左上角蓝色角标（自动补零为两位） | ❌ |
+| `<source>` | 题目来源（如 "2022年高考英语"），显示在题干前蓝色高亮 | ❌ |
+| `<stem>` | 题干内容，支持 Markdown，下划线 `___` 自动转填空线 | ✅ |
+| `<options>` | 选项列表，每行格式 `字母. 内容`（如 `A. 选项文本`） | ✅ |
 | `<answer>` | 正确答案字母，多选用逗号分隔如 `A,C` | ✅ |
-| `<analysis>` | 答案解析，支持多行文本，点击「查看解析」展开 | ❌ |
+| `<analysis>` | 答案解析，支持 Markdown，点击「查看解析」展开 | ❌ |
 
 ### 各种用法示例
 
 #### 单选题
 
 ```xml
+<num>5</num>
 <source>2022年春季</source>
 <stem>What is the capital of France?</stem>
 <options>
 A. London
-B. Paris *
+B. Paris
 C. Berlin
 D. Madrid
 </options>
@@ -73,12 +75,13 @@ D. Madrid
 在 `<answer>` 中逗号分隔多个答案：
 
 ```xml
+<num>12</num>
 <source>2022年期中</source>
 <stem>以下哪些是哺乳动物？</stem>
 <options>
-A. 鲸鱼 *
+A. 鲸鱼
 B. 鲨鱼
-C. 海豚 *
+C. 海豚
 D. 海龟
 </options>
 <answer>A,C</answer>
@@ -90,12 +93,13 @@ D. 海龟
 题干中用下划线 `___` 表示填空位置：
 
 ```xml
+<num>8</num>
 <source>词汇练习</source>
 <stem>
 The project was completed ahead of ___.
 </stem>
 <options>
-A. schedule *
+A. schedule
 B. budget
 C. deadline
 D. plan
@@ -104,9 +108,26 @@ D. plan
 <analysis>ahead of schedule 表示"提前"，是固定搭配。</analysis>
 ```
 
+#### 无来源的题目
+
+`<source>` 和 `<num>` 为可选标签，不写则不显示：
+
+```xml
+<stem>以下哪个不是编程语言？</stem>
+<options>
+A. Python
+B. Java
+C. HTML
+D. Go
+</options>
+<answer>C</answer>
+<analysis>HTML 是标记语言（Markup Language），不是编程语言。</analysis>
+```
+
 #### 题干和解析中包含图片
 
 ```xml
+<num>15</num>
 <source>地理题</source>
 <stem>
 根据下图回答问题：
@@ -115,7 +136,7 @@ D. plan
 </stem>
 <options>
 A. 北京
-B. 上海 *
+B. 上海
 C. 广州
 D. 深圳
 </options>
