@@ -2,7 +2,7 @@ import { MarkdownPostProcessorContext, MarkdownRenderer, Component } from 'obsid
 
 interface ExamQuestion {
   num?: string;
-  source: string;
+  source?: string;
   stem: string;
   options: { label: string; text: string }[];
   answer: string[];
@@ -30,7 +30,6 @@ export class ExamCardRenderer {
     const answerText = getTagContent('answer');
     const analysis = getTagContent('analysis');
 
-    if (!sourceText) throw new Error('<source> 标签不能为空');
     if (!stem) throw new Error('<stem> 标签不能为空');
     if (!optionsText) throw new Error('<options> 标签不能为空');
     if (!answerText) throw new Error('<answer> 标签不能为空');
@@ -38,7 +37,7 @@ export class ExamCardRenderer {
     const optionLines = optionsText.trim().split('\n').filter(line => line.trim());
     const options: ExamQuestion['options'] = [];
     for (const line of optionLines) {
-      const match = line.trim().match(/^([A-D])\.?\s+(.+?)(\s+\*)?$/);
+      const match = line.trim().match(/^([A-D])\.?\s*(.+?)(\s+\*)?$/);
       if (match) {
         options.push({ label: match[1], text: match[2].trim() });
       }
@@ -53,7 +52,7 @@ export class ExamCardRenderer {
       throw new Error('<answer> 标签格式错误');
     }
 
-    return { num: num || undefined, source: sourceText, stem, options, answer, analysis };
+    return { num: num || undefined, source: sourceText || undefined, stem, options, answer, analysis };
   }
 
   async render(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
@@ -81,13 +80,15 @@ export class ExamCardRenderer {
       stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
 
       // 在题干首段插入来源标签
-      const firstP = stemDiv.querySelector('p');
-      const target = firstP || stemDiv;
+      if (exam.source) {
+        const firstP = stemDiv.querySelector('p');
+        const target = firstP || stemDiv;
 
-      const sourceSpan = document.createElement('span');
-      sourceSpan.className = 'exam-card-source';
-      sourceSpan.textContent = `（${exam.source}）`;
-      target.insertBefore(sourceSpan, target.firstChild);
+        const sourceSpan = document.createElement('span');
+        sourceSpan.className = 'exam-card-source';
+        sourceSpan.textContent = `（${exam.source}）`;
+        target.insertBefore(sourceSpan, target.firstChild);
+      }
 
       // 选项
       const optionsDiv = content.createDiv('exam-card-options');

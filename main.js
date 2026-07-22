@@ -46,8 +46,6 @@ var ExamCardRenderer = class {
     const optionsText = getTagContent("options");
     const answerText = getTagContent("answer");
     const analysis = getTagContent("analysis");
-    if (!sourceText)
-      throw new Error("<source> \u6807\u7B7E\u4E0D\u80FD\u4E3A\u7A7A");
     if (!stem)
       throw new Error("<stem> \u6807\u7B7E\u4E0D\u80FD\u4E3A\u7A7A");
     if (!optionsText)
@@ -57,7 +55,7 @@ var ExamCardRenderer = class {
     const optionLines = optionsText.trim().split("\n").filter((line) => line.trim());
     const options = [];
     for (const line of optionLines) {
-      const match = line.trim().match(/^([A-D])\.?\s+(.+?)(\s+\*)?$/);
+      const match = line.trim().match(/^([A-D])\.?\s*(.+?)(\s+\*)?$/);
       if (match) {
         options.push({ label: match[1], text: match[2].trim() });
       }
@@ -69,7 +67,7 @@ var ExamCardRenderer = class {
     if (answer.length === 0) {
       throw new Error("<answer> \u6807\u7B7E\u683C\u5F0F\u9519\u8BEF");
     }
-    return { num: num || void 0, source: sourceText, stem, options, answer, analysis };
+    return { num: num || void 0, source: sourceText || void 0, stem, options, answer, analysis };
   }
   async render(source, el, ctx) {
     try {
@@ -87,12 +85,14 @@ var ExamCardRenderer = class {
         el2.innerHTML = el2.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
       });
       stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
-      const firstP = stemDiv.querySelector("p");
-      const target = firstP || stemDiv;
-      const sourceSpan = document.createElement("span");
-      sourceSpan.className = "exam-card-source";
-      sourceSpan.textContent = `\uFF08${exam.source}\uFF09`;
-      target.insertBefore(sourceSpan, target.firstChild);
+      if (exam.source) {
+        const firstP = stemDiv.querySelector("p");
+        const target = firstP || stemDiv;
+        const sourceSpan = document.createElement("span");
+        sourceSpan.className = "exam-card-source";
+        sourceSpan.textContent = `\uFF08${exam.source}\uFF09`;
+        target.insertBefore(sourceSpan, target.firstChild);
+      }
       const optionsDiv = content.createDiv("exam-card-options");
       exam.options.forEach((opt) => {
         const isCorrect = exam.answer.includes(opt.label);

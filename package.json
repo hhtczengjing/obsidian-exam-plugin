@@ -1,6 +1,6 @@
 {
   "name": "obsidian-exam-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Render exam questions as beautiful interactive cards with XML format support",
   "main": "main.js",
   "scripts": {
