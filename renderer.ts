@@ -1,5 +1,9 @@
 import { MarkdownPostProcessorContext, MarkdownRenderer, Component } from 'obsidian';
 
+export interface ExamCardSettings {
+  mode: 'memorize' | 'test';
+}
+
 interface ExamQuestion {
   num?: string;
   source?: string;
@@ -11,9 +15,11 @@ interface ExamQuestion {
 
 export class ExamCardRenderer {
   private component: Component;
+  private settings: ExamCardSettings;
 
-  constructor(component: Component) {
+  constructor(component: Component, settings: ExamCardSettings) {
     this.component = component;
+    this.settings = settings;
   }
 
   parseExamBlock(source: string): ExamQuestion {
@@ -92,16 +98,7 @@ export class ExamCardRenderer {
 
       // 选项
       const optionsDiv = content.createDiv('exam-card-options');
-      exam.options.forEach((opt) => {
-        const isCorrect = exam.answer.includes(opt.label);
-        const optEl = optionsDiv.createDiv(
-          'exam-card-option' + (isCorrect ? ' correct' : '')
-        );
-        const label = optEl.createSpan('exam-card-option-label');
-        label.textContent = opt.label;
-        const text = optEl.createSpan();
-        text.textContent = opt.text;
-      });
+      this.renderOptions(optionsDiv, exam);
 
       // 解析区（可折叠，Markdown 渲染）
       if (exam.analysis) {
@@ -128,6 +125,95 @@ export class ExamCardRenderer {
       errorDiv.style.backgroundColor = 'var(--background-secondary)';
       errorDiv.style.border = '1px solid var(--background-modifier-border)';
       errorDiv.textContent = `❌ Exam Plugin: ${error instanceof Error ? error.message : String(error)}`;
+    }
+  }
+
+  private renderOptions(optionsDiv: HTMLElement, exam: ExamQuestion) {
+    const answerSet = new Set(exam.answer);
+    const optionEls: { el: HTMLElement; label: string }[] = [];
+
+    exam.options.forEach((opt) => {
+      const optEl = optionsDiv.createDiv('exam-card-option');
+      optEl.dataset.label = opt.label;
+      const label = optEl.createSpan('exam-card-option-label');
+      label.textContent = opt.label;
+      const text = optEl.createSpan();
+      text.textContent = opt.text;
+      optionEls.push({ el: optEl, label: opt.label });
+    });
+
+    // 背题模式：直接高亮正确答案
+    if (this.settings.mode === 'memorize') {
+      exam.options.forEach((opt, i) => {
+        if (answerSet.has(opt.label)) optionEls[i].el.classList.add('correct');
+      });
+      return;
+    }
+
+    // 做题模式：先作答，再反馈
+    const isMulti = exam.answer.length > 1;
+    const selected = new Set<string>();
+    let answered = false;
+
+    const feedback = optionsDiv.createDiv('exam-card-feedback');
+    feedback.hidden = true;
+
+    const submitBtn = isMulti ? optionsDiv.createDiv('exam-card-submit') : null;
+    if (submitBtn) {
+      submitBtn.textContent = '提交答案';
+      submitBtn.hidden = true;
+    }
+
+    const showResult = (chosen: Set<string>) => {
+      answered = true;
+      const allCorrect =
+        chosen.size === answerSet.size &&
+        [...chosen].every((l) => answerSet.has(l));
+
+      optionEls.forEach(({ el, label }) => {
+        el.classList.remove('selected');
+        if (answerSet.has(label)) {
+          el.classList.add('correct');
+        } else if (chosen.has(label)) {
+          el.classList.add('wrong');
+        }
+      });
+
+      if (submitBtn) submitBtn.hidden = true;
+
+      feedback.hidden = false;
+      if (allCorrect) {
+        feedback.classList.add('correct');
+        feedback.textContent = '✓ 回答正确';
+      } else {
+        feedback.classList.add('wrong');
+        feedback.textContent = `✗ 回答错误，正确答案：${[...answerSet].join('、')}`;
+      }
+    };
+
+    optionEls.forEach(({ el, label }) => {
+      el.addEventListener('click', () => {
+        if (answered) return;
+        if (isMulti) {
+          if (selected.has(label)) {
+            selected.delete(label);
+            el.classList.remove('selected');
+          } else {
+            selected.add(label);
+            el.classList.add('selected');
+          }
+          if (submitBtn) submitBtn.hidden = selected.size === 0;
+        } else {
+          showResult(new Set([label]));
+        }
+      });
+    });
+
+    if (submitBtn) {
+      submitBtn.addEventListener('click', () => {
+        if (answered || selected.size === 0) return;
+        showResult(new Set(selected));
+      });
     }
   }
 

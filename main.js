@@ -31,8 +31,9 @@ var import_obsidian2 = __toModule(require("obsidian"));
 // renderer.ts
 var import_obsidian = __toModule(require("obsidian"));
 var ExamCardRenderer = class {
-  constructor(component) {
+  constructor(component, settings) {
     this.component = component;
+    this.settings = settings;
   }
   parseExamBlock(source) {
     const getTagContent = (tag) => {
@@ -94,14 +95,7 @@ var ExamCardRenderer = class {
         target.insertBefore(sourceSpan, target.firstChild);
       }
       const optionsDiv = content.createDiv("exam-card-options");
-      exam.options.forEach((opt) => {
-        const isCorrect = exam.answer.includes(opt.label);
-        const optEl = optionsDiv.createDiv("exam-card-option" + (isCorrect ? " correct" : ""));
-        const label = optEl.createSpan("exam-card-option-label");
-        label.textContent = opt.label;
-        const text = optEl.createSpan();
-        text.textContent = opt.text;
-      });
+      this.renderOptions(optionsDiv, exam);
       if (exam.analysis) {
         const expandBtn = card.createDiv("exam-card-expand");
         expandBtn.textContent = "\u67E5\u770B\u89E3\u6790";
@@ -125,6 +119,84 @@ var ExamCardRenderer = class {
       errorDiv.textContent = `\u274C Exam Plugin: ${error instanceof Error ? error.message : String(error)}`;
     }
   }
+  renderOptions(optionsDiv, exam) {
+    const answerSet = new Set(exam.answer);
+    const optionEls = [];
+    exam.options.forEach((opt) => {
+      const optEl = optionsDiv.createDiv("exam-card-option");
+      optEl.dataset.label = opt.label;
+      const label = optEl.createSpan("exam-card-option-label");
+      label.textContent = opt.label;
+      const text = optEl.createSpan();
+      text.textContent = opt.text;
+      optionEls.push({ el: optEl, label: opt.label });
+    });
+    if (this.settings.mode === "memorize") {
+      exam.options.forEach((opt, i) => {
+        if (answerSet.has(opt.label))
+          optionEls[i].el.classList.add("correct");
+      });
+      return;
+    }
+    const isMulti = exam.answer.length > 1;
+    const selected = new Set();
+    let answered = false;
+    const feedback = optionsDiv.createDiv("exam-card-feedback");
+    feedback.hidden = true;
+    const submitBtn = isMulti ? optionsDiv.createDiv("exam-card-submit") : null;
+    if (submitBtn) {
+      submitBtn.textContent = "\u63D0\u4EA4\u7B54\u6848";
+      submitBtn.hidden = true;
+    }
+    const showResult = (chosen) => {
+      answered = true;
+      const allCorrect = chosen.size === answerSet.size && [...chosen].every((l) => answerSet.has(l));
+      optionEls.forEach(({ el, label }) => {
+        el.classList.remove("selected");
+        if (answerSet.has(label)) {
+          el.classList.add("correct");
+        } else if (chosen.has(label)) {
+          el.classList.add("wrong");
+        }
+      });
+      if (submitBtn)
+        submitBtn.hidden = true;
+      feedback.hidden = false;
+      if (allCorrect) {
+        feedback.classList.add("correct");
+        feedback.textContent = "\u2713 \u56DE\u7B54\u6B63\u786E";
+      } else {
+        feedback.classList.add("wrong");
+        feedback.textContent = `\u2717 \u56DE\u7B54\u9519\u8BEF\uFF0C\u6B63\u786E\u7B54\u6848\uFF1A${[...answerSet].join("\u3001")}`;
+      }
+    };
+    optionEls.forEach(({ el, label }) => {
+      el.addEventListener("click", () => {
+        if (answered)
+          return;
+        if (isMulti) {
+          if (selected.has(label)) {
+            selected.delete(label);
+            el.classList.remove("selected");
+          } else {
+            selected.add(label);
+            el.classList.add("selected");
+          }
+          if (submitBtn)
+            submitBtn.hidden = selected.size === 0;
+        } else {
+          showResult(new Set([label]));
+        }
+      });
+    });
+    if (submitBtn) {
+      submitBtn.addEventListener("click", () => {
+        if (answered || selected.size === 0)
+          return;
+        showResult(new Set(selected));
+      });
+    }
+  }
   async renderMarkdown(markdown, el, sourcePath) {
     await import_obsidian.MarkdownRenderer.renderMarkdown(markdown, el, sourcePath, this.component);
   }
@@ -144,6 +216,8 @@ var EXAM_CARD_STYLE = `
   --blue-light: #ebf4ff;
   --green: #38a169;
   --green-light: #f0fff4;
+  --red: #e53e3e;
+  --red-light: #fff5f5;
 }
 
 .theme-dark {
@@ -158,6 +232,8 @@ var EXAM_CARD_STYLE = `
   --blue-light: #2c5282;
   --green: #68d391;
   --green-light: #22543d;
+  --red: #fc8181;
+  --red-light: #3b2d2d;
 }
 
 .exam-card-wrapper {
@@ -285,6 +361,56 @@ var EXAM_CARD_STYLE = `
   background: var(--green);
   border-color: var(--green);
   color: #fff;
+}
+
+.exam-card-option.selected .exam-card-option-label {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+.exam-card-option.wrong .exam-card-option-label {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+.exam-card-feedback {
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.exam-card-feedback.correct {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.exam-card-feedback.wrong {
+  background: var(--red-light);
+  color: var(--red);
+}
+
+.exam-card-submit {
+  margin-top: 16px;
+  padding: 8px 0;
+  border-radius: 8px;
+  background: var(--blue);
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.exam-card-submit:hover {
+  opacity: 0.9;
 }
 
 .exam-card-expand {
@@ -515,16 +641,46 @@ var EXAM_CARD_STYLE = `
 `;
 
 // main.ts
+var DEFAULT_SETTINGS = {
+  mode: "memorize"
+};
 var ExamCardPlugin = class extends import_obsidian2.Plugin {
+  constructor() {
+    super(...arguments);
+    this.settings = DEFAULT_SETTINGS;
+  }
   async onload() {
+    await this.loadSettings();
     this.registerMarkdownCodeBlockProcessor("exam", (source, el, ctx) => {
-      const renderer = new ExamCardRenderer(this);
+      const renderer = new ExamCardRenderer(this, this.settings);
       renderer.render(source, el, ctx);
     });
+    this.addSettingTab(new ExamSettingTab(this.app, this));
     const style = document.createElement("style");
     style.textContent = EXAM_CARD_STYLE;
     document.head.appendChild(style);
   }
   onunload() {
+  }
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
+};
+var ExamSettingTab = class extends import_obsidian2.PluginSettingTab {
+  constructor(app, plugin) {
+    super(app, plugin);
+    this.plugin = plugin;
+  }
+  display() {
+    const { containerEl } = this;
+    containerEl.empty();
+    containerEl.createEl("h2", { text: "Exam Plugin \u8BBE\u7F6E" });
+    new import_obsidian2.Setting(containerEl).setName("\u7B54\u9898\u6A21\u5F0F").setDesc("\u80CC\u9898\u6A21\u5F0F\uFF1A\u770B\u9898\u65F6\u76F4\u63A5\u9AD8\u4EAE\u6B63\u786E\u7B54\u6848\uFF1B\u505A\u9898\u6A21\u5F0F\uFF1A\u5148\u4F5C\u7B54\uFF0C\u518D\u5373\u65F6\u53CD\u9988\u5BF9\u9519\u3002\u4FEE\u6539\u540E\u91CD\u65B0\u6253\u5F00\u7B14\u8BB0\u751F\u6548\u3002").addDropdown((dropdown) => dropdown.addOption("memorize", "\u80CC\u9898\u6A21\u5F0F\uFF08\u76F4\u63A5\u663E\u793A\u7B54\u6848\uFF09").addOption("test", "\u505A\u9898\u6A21\u5F0F\uFF08\u5148\u4F5C\u7B54\u518D\u53CD\u9988\uFF09").setValue(this.plugin.settings.mode).onChange(async (value) => {
+      this.plugin.settings.mode = value;
+      await this.plugin.saveSettings();
+    }));
   }
 };

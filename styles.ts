@@ -11,6 +11,8 @@ export const EXAM_CARD_STYLE = `
   --blue-light: #ebf4ff;
   --green: #38a169;
   --green-light: #f0fff4;
+  --red: #e53e3e;
+  --red-light: #fff5f5;
 }
 
 .theme-dark {
@@ -25,6 +27,8 @@ export const EXAM_CARD_STYLE = `
   --blue-light: #2c5282;
   --green: #68d391;
   --green-light: #22543d;
+  --red: #fc8181;
+  --red-light: #3b2d2d;
 }
 
 .exam-card-wrapper {
@@ -152,6 +156,56 @@ export const EXAM_CARD_STYLE = `
   background: var(--green);
   border-color: var(--green);
   color: #fff;
+}
+
+.exam-card-option.selected .exam-card-option-label {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+.exam-card-option.wrong .exam-card-option-label {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+.exam-card-feedback {
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.exam-card-feedback.correct {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.exam-card-feedback.wrong {
+  background: var(--red-light);
+  color: var(--red);
+}
+
+.exam-card-submit {
+  margin-top: 16px;
+  padding: 8px 0;
+  border-radius: 8px;
+  background: var(--blue);
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.exam-card-submit:hover {
+  opacity: 0.9;
 }
 
 .exam-card-expand {
