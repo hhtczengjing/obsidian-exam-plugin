@@ -31,7 +31,8 @@ var import_obsidian2 = __toModule(require("obsidian"));
 // renderer.ts
 var import_obsidian = __toModule(require("obsidian"));
 var ExamCardRenderer = class {
-  constructor(component, settings) {
+  constructor(app, component, settings) {
+    this.app = app;
     this.component = component;
     this.settings = settings;
   }
@@ -82,10 +83,7 @@ var ExamCardRenderer = class {
       const content = card.createDiv("exam-card-content");
       const stemDiv = content.createDiv("exam-card-question");
       await this.renderMarkdown(exam.stem, stemDiv, ctx.sourcePath);
-      stemDiv.querySelectorAll("p, li, h1, h2, h3, h4, h5, h6, blockquote").forEach((el2) => {
-        el2.innerHTML = el2.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
-      });
-      stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
+      this.replaceBlanks(stemDiv);
       if (exam.source) {
         const firstP = stemDiv.querySelector("p");
         const target = firstP || stemDiv;
@@ -197,8 +195,32 @@ var ExamCardRenderer = class {
       });
     }
   }
+  replaceBlanks(root) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: (node) => node.textContent && node.textContent.includes("_") ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
+    });
+    const targets = [];
+    while (walker.nextNode())
+      targets.push(walker.currentNode);
+    for (const textNode of targets) {
+      const parts = textNode.textContent.split(/_+/);
+      if (parts.length === 1)
+        continue;
+      const frag = document.createDocumentFragment();
+      parts.forEach((part, i) => {
+        if (i > 0) {
+          const blank = document.createElement("span");
+          blank.className = "exam-card-blank";
+          frag.appendChild(blank);
+        }
+        if (part)
+          frag.appendChild(document.createTextNode(part));
+      });
+      textNode.replaceWith(frag);
+    }
+  }
   async renderMarkdown(markdown, el, sourcePath) {
-    await import_obsidian.MarkdownRenderer.renderMarkdown(markdown, el, sourcePath, this.component);
+    await import_obsidian.MarkdownRenderer.render(this.app, markdown, el, sourcePath, this.component);
   }
 };
 
@@ -652,7 +674,7 @@ var ExamCardPlugin = class extends import_obsidian2.Plugin {
   async onload() {
     await this.loadSettings();
     this.registerMarkdownCodeBlockProcessor("exam", (source, el, ctx) => {
-      const renderer = new ExamCardRenderer(this, this.settings);
+      const renderer = new ExamCardRenderer(this.app, this, this.settings);
       renderer.render(source, el, ctx);
     });
     this.addSettingTab(new ExamSettingTab(this.app, this));

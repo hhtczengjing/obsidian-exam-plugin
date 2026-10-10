@@ -14,7 +14,7 @@ export default class ExamCardPlugin extends Plugin {
 
     // 注册代码块处理器
     this.registerMarkdownCodeBlockProcessor('exam', (source, el, ctx) => {
-      const renderer = new ExamCardRenderer(this, this.settings);
+      const renderer = new ExamCardRenderer(this.app, this, this.settings);
       renderer.render(source, el, ctx);
     });
 

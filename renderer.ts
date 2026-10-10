@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, MarkdownRenderer, Component } from 'obsidian';
+import { App, MarkdownPostProcessorContext, MarkdownRenderer, Component } from 'obsidian';
 
 export interface ExamCardSettings {
   mode: 'memorize' | 'test';
@@ -14,10 +14,12 @@ interface ExamQuestion {
 }
 
 export class ExamCardRenderer {
+  private app: App;
   private component: Component;
   private settings: ExamCardSettings;
 
-  constructor(component: Component, settings: ExamCardSettings) {
+  constructor(app: App, component: Component, settings: ExamCardSettings) {
+    this.app = app;
     this.component = component;
     this.settings = settings;
   }
@@ -79,11 +81,8 @@ export class ExamCardRenderer {
       const stemDiv = content.createDiv('exam-card-question');
       await this.renderMarkdown(exam.stem, stemDiv, ctx.sourcePath);
 
-      // 填空线替换
-      stemDiv.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, blockquote').forEach(el => {
-        el.innerHTML = el.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
-      });
-      stemDiv.innerHTML = stemDiv.innerHTML.replace(/_+/g, '<span class="exam-card-blank"></span>');
+      // 填空线替换：仅处理文本节点，避免破坏 <img>/<a> 等元素属性中的下划线
+      this.replaceBlanks(stemDiv);
 
       // 在题干首段插入来源标签
       if (exam.source) {
@@ -217,8 +216,39 @@ export class ExamCardRenderer {
     }
   }
 
+  private replaceBlanks(root: HTMLElement) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: (node) =>
+        node.textContent && node.textContent.includes('_')
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_REJECT,
+    });
+
+    const targets: Text[] = [];
+    while (walker.nextNode()) targets.push(walker.currentNode as Text);
+
+    for (const textNode of targets) {
+      const parts = textNode.textContent!.split(/_+/);
+      if (parts.length === 1) continue;
+
+      const frag = document.createDocumentFragment();
+      parts.forEach((part, i) => {
+        if (i > 0) {
+          const blank = document.createElement('span');
+          blank.className = 'exam-card-blank';
+          frag.appendChild(blank);
+        }
+        if (part) frag.appendChild(document.createTextNode(part));
+      });
+      textNode.replaceWith(frag);
+    }
+  }
+
   private async renderMarkdown(markdown: string, el: HTMLElement, sourcePath: string) {
-    await MarkdownRenderer.renderMarkdown(
+    // 必须使用带 app 的 render：内部图片（相对路径 / ![[ ]]）解析为
+    // .internal-embed 占位符后，只有传入 app 才会被加载成真正的 <img>
+    await MarkdownRenderer.render(
+      this.app,
       markdown,
       el,
       sourcePath,
