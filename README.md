@@ -2,6 +2,8 @@
 
 一个 Obsidian 插件，将考试题目渲染成精美的交互式卡片。使用 XML 标签定义题目结构。
 
+![Exam Plugin 效果预览](docs/preview.png)
+
 ## 功能特性
 
 - 📝 **XML 标签格式** — 使用 `<num>`、`<source>`、`<stem>`、`<options>`、`<answer>`、`<analysis>` 标签定义题目
