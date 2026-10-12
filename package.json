@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit && node esbuild.config.mjs production",
+    "deploy": "npm run build && PLUGIN_DIR=\"${VAULT_HOME:-$HOME/Documents/knowledge-vault}/.obsidian/plugins/obsidian-exam-plugin\" && mkdir -p \"$PLUGIN_DIR\" && cp main.js manifest.json \"$PLUGIN_DIR/\" && echo \"✅ deployed to $PLUGIN_DIR (请在 Obsidian 中重新加载插件)\"",
     "release": "npm run build && mkdir -p release && cp main.js manifest.json release/ && cd release && zip -r ../obsidian-exam-plugin.zip . && cd .. && rm -rf release"
   },
   "keywords": [
